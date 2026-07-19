@@ -1,0 +1,128 @@
+version: 1.3.13
+
+cache: true
+
+interface:
+  customWelcome: 'Welcome to LibreChat.'
+  fileSearch: true
+  modelSelect: true
+  parameters: true
+  presets: true
+  bookmarks: true
+  multiConvo: true
+  fileCitations: true
+  prompts:
+    use: true
+    create: true
+    share: false
+    public: false
+  agents:
+    use: true
+    create: true
+    share: false
+    public: false
+  peoplePicker:
+    users: true
+    groups: true
+    roles: true
+  marketplace:
+    use: false
+  privacyPolicy:
+    externalUrl: 'https://www.librechat.ai/privacy-policy'
+    openNewTab: true
+  termsOfService:
+    externalUrl: 'https://www.librechat.ai/tos'
+    openNewTab: true
+    modalAcceptance: false
+
+endpoints:
+  agents:
+    recursionLimit: 50
+    maxRecursionLimit: 100
+    disableBuilder: false
+    titleTiming: immediate
+    maxCitations: 30
+    maxCitationsPerFile: 7
+    minRelevanceScore: 0.45
+    capabilities: ['deferred_tools', 'execute_code', 'file_search', 'actions', 'tools']
+  custom:
+    - name: 'Pollinations'
+      apiKey: '${POLLINATIONS_API_KEY}'
+      baseURL: 'https://text.pollinations.ai/openai'
+      models:
+        default:
+          - 'openai-fast'
+          - 'gpt-oss-20b'
+        fetch: false
+      titleConvo: true
+      titleModel: 'openai-fast'
+      dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
+      modelDisplayLabel: 'Pollinations'
+
+    - name: 'AgentRouter'
+      apiKey: '${AGENTROUTER_API_KEY}'
+      baseURL: 'https://agentrouter.org/v1'
+      models:
+        default:
+          - 'gpt-5'
+          - 'gpt-5.5'
+        fetch: false
+      titleConvo: true
+      titleModel: 'gpt-5'
+      dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
+      modelDisplayLabel: 'AgentRouter'
+
+    - name: 'OpenRouter'
+      apiKey: '${OPENROUTER_KEY}'
+      baseURL: 'https://openrouter.ai/api/v1'
+      headers:
+        x-librechat-body-parentmessageid: '{{LIBRECHAT_BODY_PARENTMESSAGEID}}'
+      models:
+        default:
+          - 'deepseek/deepseek-chat-v3-0324:free'
+          - 'meta-llama/llama-3.3-70b-instruct:free'
+        fetch: false
+      titleConvo: true
+      titleModel: 'deepseek/deepseek-chat-v3-0324:free'
+      dropParams: ['stop']
+      modelDisplayLabel: 'OpenRouter'
+
+modelSpecs:
+  list:
+    - name: 'cybertools-free-chat'
+      label: 'CyberTools Free Chat'
+      description: 'Free hosted fallback for general chat, coding help, and defensive security analysis.'
+      default: true
+      preset:
+        endpoint: 'Pollinations'
+        model: 'openai-fast'
+        temperature: 0.7
+        instructions: |
+          You are CyberTools AI, a practical general-purpose assistant with strong defensive cybersecurity and software engineering skills. Help with everyday tasks, programming, security review, reporting, and authorized testing plans. Refuse malware, credential theft, phishing, persistence, evasion, and instructions for unauthorized exploitation.
+
+    - name: 'agentrouter-gpt5'
+      label: 'AgentRouter GPT-5'
+      description: 'Use when a valid AgentRouter key is configured or supplied by the user.'
+      preset:
+        endpoint: 'AgentRouter'
+        model: 'gpt-5'
+        temperature: 0.6
+
+    - name: 'openrouter-free'
+      label: 'OpenRouter Free'
+      description: 'Use with an OpenRouter key for free-tier compatible models.'
+      preset:
+        endpoint: 'OpenRouter'
+        model: 'deepseek/deepseek-chat-v3-0324:free'
+        temperature: 0.7
+
+memory:
+  disabled: false
+  validKeys: ['preferences', 'work_info', 'personal_info', 'skills', 'interests', 'context']
+  tokenLimit: 10000
+  maxInputTokens: 12000
+  personalize: true
+
+messageFilter:
+  pii:
+    starterPatterns: ['sk_prefix', 'bearer_header', 'api_key_header']

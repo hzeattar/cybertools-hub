@@ -282,7 +282,7 @@ export function syncDocumentLanguage(locale: SupportedLocale) {
   }
 
   document.documentElement.lang = locale;
-  document.documentElement.dir = i18n.dir(locale);
+  document.documentElement.dir = 'ltr';
 }
 
 export const i18nInitPromise = i18n.use(initReactI18next).init({
