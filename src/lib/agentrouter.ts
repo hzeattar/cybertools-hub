@@ -211,7 +211,7 @@ export function buildLocalCyberAnalysis(message: string, plan: CyberAiPlan, fail
     : "- No endpoint list detected. Paste headers, routes, OpenAPI snippets, or report text for deeper ranking.";
   const priority = riskList.length ? riskList.map((item, index) => `${index + 1}. ${item}`).join("\n") : "1. Confirm the asset is in scope.\n2. Identify authentication, authorization, input, and data exposure risks.\n3. Capture evidence without touching third-party data.";
   const providerNote = failures.length
-    ? `\nProvider status\n${failures.slice(0, 3).map((failure) => `- ${failure}`).join("\n")}\n`
+    ? "\nProvider status\n- External AI provider unavailable or not configured. Local fallback engaged.\n"
     : "";
 
   return [
