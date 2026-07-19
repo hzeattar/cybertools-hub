@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, KeyboardEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -179,6 +179,153 @@ function deriveClientTitle(message: string) {
 function AgentIcon({ agent }: { agent: AiAgent }) {
   const Icon = iconMap[agent.icon] ?? ShieldCheck;
   return <Icon size={16} />;
+}
+
+function renderInlineMarkdown(text: string): ReactNode[] {
+  return text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, index) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={index}>{part.slice(1, -1)}</code>;
+    }
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
+function parseTableRow(line: string) {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function isTableSeparator(line: string) {
+  return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+}
+
+function renderMarkdownContent(content: string) {
+  const lines = content.split(/\r?\n/);
+  const blocks: ReactNode[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index] ?? "";
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      index += 1;
+      continue;
+    }
+
+    if (trimmed.startsWith("```")) {
+      const codeLines: string[] = [];
+      index += 1;
+      while (index < lines.length && !lines[index].trim().startsWith("```")) {
+        codeLines.push(lines[index]);
+        index += 1;
+      }
+      index += 1;
+      blocks.push(
+        <pre key={`code-${index}`}>
+          <code>{codeLines.join("\n")}</code>
+        </pre>,
+      );
+      continue;
+    }
+
+    if (trimmed.startsWith("#")) {
+      const text = trimmed.replace(/^#{1,4}\s*/, "");
+      blocks.push(<h4 key={`heading-${index}`}>{renderInlineMarkdown(text)}</h4>);
+      index += 1;
+      continue;
+    }
+
+    if (trimmed.includes("|") && lines[index + 1] && isTableSeparator(lines[index + 1])) {
+      const header = parseTableRow(trimmed);
+      const rows: string[][] = [];
+      index += 2;
+      while (index < lines.length && lines[index].includes("|") && lines[index].trim()) {
+        rows.push(parseTableRow(lines[index]));
+        index += 1;
+      }
+      blocks.push(
+        <div className="markdown-table-wrap" key={`table-${index}`}>
+          <table>
+            <thead>
+              <tr>
+                {header.map((cell, cellIndex) => (
+                  <th key={cellIndex}>{renderInlineMarkdown(cell)}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, cellIndex) => (
+                    <td key={cellIndex}>{renderInlineMarkdown(cell)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
+      continue;
+    }
+
+    if (/^[-*]\s+/.test(trimmed)) {
+      const items: string[] = [];
+      while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
+        items.push(lines[index].trim().replace(/^[-*]\s+/, ""));
+        index += 1;
+      }
+      blocks.push(
+        <ul key={`ul-${index}`}>
+          {items.map((item, itemIndex) => (
+            <li key={itemIndex}>{renderInlineMarkdown(item)}</li>
+          ))}
+        </ul>,
+      );
+      continue;
+    }
+
+    if (/^\d+[.)]\s+/.test(trimmed)) {
+      const items: string[] = [];
+      while (index < lines.length && /^\d+[.)]\s+/.test(lines[index].trim())) {
+        items.push(lines[index].trim().replace(/^\d+[.)]\s+/, ""));
+        index += 1;
+      }
+      blocks.push(
+        <ol key={`ol-${index}`}>
+          {items.map((item, itemIndex) => (
+            <li key={itemIndex}>{renderInlineMarkdown(item)}</li>
+          ))}
+        </ol>,
+      );
+      continue;
+    }
+
+    const paragraphLines = [trimmed];
+    index += 1;
+    while (
+      index < lines.length &&
+      lines[index].trim() &&
+      !lines[index].trim().startsWith("```") &&
+      !lines[index].trim().startsWith("#") &&
+      !/^[-*]\s+/.test(lines[index].trim()) &&
+      !/^\d+[.)]\s+/.test(lines[index].trim()) &&
+      !(lines[index].includes("|") && lines[index + 1] && isTableSeparator(lines[index + 1]))
+    ) {
+      paragraphLines.push(lines[index].trim());
+      index += 1;
+    }
+    blocks.push(<p key={`p-${index}`}>{renderInlineMarkdown(paragraphLines.join(" "))}</p>);
+  }
+
+  return blocks;
 }
 
 export function CyberAiClient({ signedIn, pro }: Props) {
@@ -584,7 +731,7 @@ export function CyberAiClient({ signedIn, pro }: Props) {
                     <span>{formatDate(message.createdAt)}</span>
                     {message.fallback ? <span className="tag coral">fallback</span> : null}
                   </div>
-                  <div className="message-content">{message.content}</div>
+                  <div className="message-content">{renderMarkdownContent(message.content)}</div>
                 </div>
               </article>
             ))

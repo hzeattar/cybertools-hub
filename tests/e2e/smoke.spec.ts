@@ -37,7 +37,7 @@ test("registration creates an account and account page loads", async ({ page }, 
   );
   await expect(page.getByRole("button", { name: /^Send$/i })).toBeEnabled({ timeout: 30_000 });
   await page.getByRole("button", { name: /^Send$/i }).click();
-  await expect(page.getByText(/Offline CyberTools Analyst|Risk priorities/i)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Offline CyberTools Analyst")).toBeVisible({ timeout: 30_000 });
   if (testInfo.project.name.includes("mobile")) {
     await page.getByRole("button", { name: "Toggle context panel" }).click();
   }
