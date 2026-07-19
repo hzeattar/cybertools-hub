@@ -80,6 +80,10 @@ textarea {
   width: 100%;
 }
 
+.container-wide {
+  max-width: 1680px;
+}
+
 .topbar {
   backdrop-filter: blur(16px);
   background: rgba(5, 8, 7, 0.9);
@@ -750,6 +754,17 @@ textarea {
   padding-top: 26px;
 }
 
+.ai-app-section {
+  min-height: calc(100vh - 68px);
+  padding: 14px 16px 16px;
+}
+
+.ai-app-container {
+  margin: 0 auto;
+  max-width: 1680px;
+  width: 100%;
+}
+
 .ai-status-line {
   align-items: center;
   background: rgba(49, 215, 255, 0.07);
@@ -770,9 +785,10 @@ textarea {
 .ai-chat-shell {
   align-items: stretch;
   display: grid;
-  gap: 14px;
-  grid-template-columns: 260px minmax(0, 1fr) 320px;
-  min-height: 720px;
+  gap: 12px;
+  grid-template-columns: 292px minmax(540px, 1fr) 352px;
+  height: calc(100vh - 92px);
+  min-height: 680px;
 }
 
 .ai-chat-locked {
@@ -790,6 +806,13 @@ textarea {
 
 .ai-locked-panel svg {
   color: var(--green);
+}
+
+.ai-locked-panel h1 {
+  color: #f4fff8;
+  font-size: 38px;
+  font-weight: 850;
+  line-height: 1.08;
 }
 
 .ai-locked-panel h2,
@@ -840,15 +863,23 @@ textarea {
 
 .ai-chat-sidebar,
 .ai-context-rail {
+  background: rgba(7, 16, 13, 0.98);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
+}
+
+.ai-context-rail {
+  overflow: auto;
 }
 
 .conversation-list {
   display: grid;
   gap: 8px;
+  flex: 1;
   overflow: auto;
   padding-right: 2px;
 }
@@ -897,8 +928,11 @@ textarea {
 }
 
 .ai-chat-main {
+  background: rgba(5, 12, 9, 0.98);
   display: grid;
-  grid-template-rows: auto minmax(350px, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   padding: 0;
 }
@@ -934,10 +968,15 @@ textarea {
 }
 
 .message-timeline {
-  background: rgba(3, 7, 5, 0.62);
+  background:
+    linear-gradient(rgba(42, 245, 154, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(49, 215, 255, 0.022) 1px, transparent 1px),
+    rgba(3, 7, 5, 0.72);
+  background-size: 28px 28px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
   overflow: auto;
   padding: 18px;
 }
@@ -1004,11 +1043,16 @@ textarea {
 }
 
 .ai-empty-board {
-  align-content: center;
+  align-content: start;
+  align-self: center;
+  background: rgba(7, 16, 13, 0.88);
+  border: 1px solid rgba(42, 245, 154, 0.18);
+  border-radius: 8px;
   display: grid;
   gap: 14px;
-  margin: auto;
+  margin: 0 auto;
   max-width: 760px;
+  padding: 18px;
   width: 100%;
 }
 
@@ -1068,7 +1112,8 @@ textarea {
   color: #ecfff5;
   font-family: var(--font-mono);
   line-height: 1.55;
-  min-height: 116px;
+  max-height: 180px;
+  min-height: 126px;
   padding: 12px;
   resize: vertical;
   width: 100%;
@@ -1102,8 +1147,8 @@ textarea {
 .rail-section {
   border-bottom: 1px solid rgba(42, 245, 154, 0.12);
   display: grid;
-  gap: 10px;
-  padding-bottom: 14px;
+  gap: 9px;
+  padding-bottom: 12px;
 }
 
 .rail-section:last-child {
@@ -1113,7 +1158,7 @@ textarea {
 
 .agent-list {
   display: grid;
-  gap: 8px;
+  gap: 7px;
 }
 
 .agent-card {
@@ -1126,7 +1171,7 @@ textarea {
   display: grid;
   gap: 9px;
   grid-template-columns: 32px minmax(0, 1fr);
-  padding: 10px;
+  padding: 9px;
   text-align: left;
 }
 
@@ -1156,6 +1201,7 @@ textarea {
 
 .agent-card small {
   display: block;
+  font-size: 12px;
   margin-top: 3px;
 }
 
@@ -1231,13 +1277,25 @@ textarea {
 
 @media (max-width: 1180px) {
   .ai-chat-shell {
+    height: auto;
     grid-template-columns: 240px minmax(0, 1fr);
+    min-height: auto;
+  }
+
+  .ai-chat-main {
+    min-height: 720px;
+  }
+
+  .ai-chat-sidebar,
+  .ai-context-rail {
+    height: auto;
   }
 
   .ai-context-rail {
     display: grid;
     grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
   }
 
   .rail-section {
@@ -1272,6 +1330,14 @@ textarea {
 
   .ai-chat-shell {
     grid-template-columns: 1fr;
+  }
+
+  .ai-app-section {
+    padding: 10px;
+  }
+
+  .ai-chat-main {
+    min-height: 700px;
   }
 
   .ai-chat-sidebar {

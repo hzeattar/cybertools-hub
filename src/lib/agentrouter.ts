@@ -1,5 +1,5 @@
-const DEFAULT_AGENTROUTER_BASE_URL = "https://agentrouter.org/v1";
-const DEFAULT_AGENTROUTER_MODEL = "gpt-5";
+const DEFAULT_AGENTROUTER_BASE_URL = "https://co.agentrouter.org/v1";
+const DEFAULT_AGENTROUTER_MODEL = "gpt-5.5";
 const DEFAULT_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const DEFAULT_OPENROUTER_MODEL = "openrouter/free";
 const DEFAULT_GROQ_BASE_URL = "https://api.groq.com/openai/v1";

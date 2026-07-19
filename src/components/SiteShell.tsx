@@ -9,7 +9,15 @@ const navItems = [
   { href: "/guides/how-to-write-a-bug-bounty-report", label: "Guides" },
 ];
 
-export async function SiteShell({ children }: { children: React.ReactNode }) {
+export async function SiteShell({
+  children,
+  hideFooter = false,
+  wide = false,
+}: {
+  children: React.ReactNode;
+  hideFooter?: boolean;
+  wide?: boolean;
+}) {
   const user = await getCurrentUser();
 
   return (
@@ -18,7 +26,7 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       <header className="topbar">
-        <div className="container topbar-inner">
+        <div className={`container topbar-inner ${wide ? "container-wide" : ""}`}>
           <Link className="brand" href="/" aria-label="CyberTools Hub home">
             <span className="brand-mark">
               <TerminalSquare size={20} />
@@ -52,19 +60,21 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main id="main">{children}</main>
-      <footer className="footer">
-        <div className="container footer-grid">
-          <p>
-            CyberTools Hub is built for authorized security research. Do not use these workflows against systems where
-            you do not have permission.
-          </p>
-          <div className="footer-links">
-            <Link href="/legal/privacy">Privacy</Link>
-            <Link href="/legal/terms">Terms</Link>
-            <Link href="/contact">Contact</Link>
+      {!hideFooter ? (
+        <footer className="footer">
+          <div className="container footer-grid">
+            <p>
+              CyberTools Hub is built for authorized security research. Do not use these workflows against systems where
+              you do not have permission.
+            </p>
+            <div className="footer-links">
+              <Link href="/legal/privacy">Privacy</Link>
+              <Link href="/legal/terms">Terms</Link>
+              <Link href="/contact">Contact</Link>
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      ) : null}
     </div>
   );
 }

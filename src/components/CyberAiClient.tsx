@@ -119,6 +119,11 @@ function formatDate(value: string) {
   );
 }
 
+function deriveClientTitle(message: string) {
+  const title = message.replace(/\s+/g, " ").trim();
+  return title.length > 52 ? `${title.slice(0, 49)}...` : title;
+}
+
 function AgentIcon({ agent }: { agent: AiAgent }) {
   const Icon = iconMap[agent.icon] ?? ShieldCheck;
   return <Icon size={16} />;
@@ -257,6 +262,13 @@ export function CyberAiClient({ signedIn, pro }: Props) {
       let conversation = activeConversation;
       if (!conversation) conversation = (await createNewConversation(agentId)) ?? undefined;
       if (!conversation) throw new Error("Could not create a conversation.");
+      const optimisticUserMessage: Message = {
+        id: `optimistic-${Date.now()}`,
+        role: "user",
+        content: cleanInput,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((current) => [...current, optimisticUserMessage]);
 
       const response = await fetch(`/api/ai/conversations/${encodeURIComponent(conversation.id)}/messages`, {
         method: "POST",
@@ -266,7 +278,15 @@ export function CyberAiClient({ signedIn, pro }: Props) {
       const data = (await response.json().catch(() => ({}))) as MessagesResponse;
       if (!response.ok) throw new Error(data.error ?? "Cyber AI request failed.");
 
-      setMessages((current) => [...current, ...(data.messages ?? [])]);
+      const nextMessages = data.messages ?? [];
+      if (nextMessages.length) {
+        setMessages((current) => [
+          ...current.filter((message) => message.id !== optimisticUserMessage.id),
+          ...nextMessages,
+        ]);
+      } else {
+        setMessages((current) => current.filter((message) => message.id !== optimisticUserMessage.id));
+      }
       setPendingMemories((current) => [...(data.memoryCandidates ?? []), ...current]);
       setContextLabels((data.context ?? []).map((item) => `${item.type}: ${item.title}`));
       setProvider(`${data.providerLabel ?? "Cyber AI"}${data.fallback ? " fallback" : ""}`);
@@ -274,7 +294,20 @@ export function CyberAiClient({ signedIn, pro }: Props) {
         data.usage?.limit ?? "?"
       }`;
       setInput("");
-      await refreshWorkspace(conversation.id);
+      const now = new Date().toISOString();
+      setConversations((current) =>
+        current
+          .map((item) =>
+            item.id === conversation.id
+              ? {
+                  ...item,
+                  title: item.title === "New security chat" ? deriveClientTitle(cleanInput) : item.title,
+                  updatedAt: now,
+                }
+              : item,
+          )
+          .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
+      );
       setStatus(usageStatus);
     } catch (error) {
       setStatus((error as Error).message);
@@ -324,6 +357,7 @@ export function CyberAiClient({ signedIn, pro }: Props) {
       <div className="ai-chat-shell ai-chat-locked">
         <section className="panel ai-locked-panel">
           <Lock size={28} />
+          <h1>Cyber AI Analyst</h1>
           <h2>Login required</h2>
           <p className="muted">
             Cyber AI Workspace keeps conversations, approved memories, and entitlements tied to your account.

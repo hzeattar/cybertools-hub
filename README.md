@@ -46,8 +46,8 @@ ORDER_HMAC_SECRET=replace_with_random_32_byte_secret
 AI_PROVIDER_ORDER=agentrouter,openrouter,groq,local
 AI_LOCAL_FALLBACK=enabled
 AGENTROUTER_API_KEY=replace_with_agentrouter_key
-AGENTROUTER_BASE_URL=https://agentrouter.org/v1
-AGENTROUTER_MODEL=gpt-5
+AGENTROUTER_BASE_URL=https://co.agentrouter.org/v1
+AGENTROUTER_MODEL=gpt-5.5
 OPENROUTER_API_KEY=
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL=openrouter/free
@@ -98,7 +98,7 @@ This shortcut is disabled when `NODE_ENV=production`.
 - The first RAG layer uses approved memories plus built-in defensive knowledge with keyword scoring, so it does not require pgvector or embedding API costs.
 - The server-side safety layer refuses malware, phishing, credential theft, persistence, harmful automation, and unauthorized exploitation requests.
 - The provider chain is controlled by `AI_PROVIDER_ORDER`. If external providers fail or are not configured, `local` returns deterministic defensive guidance instead of a broken 502 page.
-- AgentRouter docs currently show `https://agentrouter.org/v1` with model `gpt-5`. OpenRouter can be used as a free-tier fallback with `OPENROUTER_API_KEY` and `OPENROUTER_MODEL=openrouter/free`.
+- AgentRouter's current OpenAI-compatible examples use `https://co.agentrouter.org/v1` with model `gpt-5.5`. OpenRouter can be used as a free-tier fallback with `OPENROUTER_API_KEY` and `OPENROUTER_MODEL=openrouter/free`.
 
 Workspace APIs:
 
