@@ -1,155 +1,239 @@
-# CyberTools Hub
+<p align="center">
+  <a href="https://librechat.ai">
+    <img src="client/public/assets/logo.svg" height="256">
+  </a>
+  <h1 align="center">
+    <a href="https://librechat.ai">LibreChat</a>
+  </h1>
+</p>
 
-CyberTools Hub is a Next.js security tools platform with account-based USDT TRC20 checkout, paid digital downloads, and a defensive multi-provider Cyber AI Analyst.
+<p align="center">
+  <strong>English</strong> ·
+  <a href="README.zh.md">中文</a>
+</p>
 
-## What Is Included
+<p align="center">
+  <a href="https://discord.librechat.ai"> 
+    <img
+      src="https://img.shields.io/discord/1086345563026489514?label=&logo=discord&style=for-the-badge&logoWidth=20&logoColor=white&labelColor=000000&color=blueviolet">
+  </a>
+  <a href="https://www.youtube.com/@LibreChat"> 
+    <img
+      src="https://img.shields.io/badge/YOUTUBE-red.svg?style=for-the-badge&logo=youtube&logoColor=white&labelColor=000000&logoWidth=20">
+  </a>
+  <a href="https://docs.librechat.ai"> 
+    <img
+      src="https://img.shields.io/badge/DOCS-blue.svg?style=for-the-badge&logo=read-the-docs&logoColor=white&labelColor=000000&logoWidth=20">
+  </a>
+  <a aria-label="Sponsors" href="https://github.com/sponsors/danny-avila">
+    <img
+      src="https://img.shields.io/badge/SPONSORS-brightgreen.svg?style=for-the-badge&logo=github-sponsors&logoColor=white&labelColor=000000&logoWidth=20">
+  </a>
+</p>
 
-- Free browser-first security tools with SEO pages.
-- Account registration and login with HttpOnly signed sessions.
-- User-owned orders, signed downloads, and entitlement tracking.
-- Admin manual approval for USDT deposits that need human review.
-- Built-in support inbox surfaced inside `/admin`.
-- AI Pro Pass for 30-day higher Cyber AI limits.
-- Claude-style CyberTools AI Workspace with conversations, many agents, provider picker, text attachments, exports, user-approved memory, keyword RAG, and provider route telemetry.
-- Cyber AI provider routing: AgentRouter, OpenRouter, Groq, Gemini, Mistral, Anthropic, OpenAI, custom OpenAI-compatible endpoints, Ollama, Pollinations Free Cloud, then local defensive fallback.
-- TRONSCAN-backed USDT TRC20 payment verification.
-- Postgres-ready production storage and local JSON dev storage.
-- Dark professional security interface.
+<p align="center">
+<a href="https://railway.com/deploy/librechat-official?referralCode=HI9hWz&utm_medium=integration&utm_source=readme&utm_campaign=librechat">
+  <img src="https://railway.com/button.svg" alt="Deploy on Railway" height="30">
+</a>
+<a href="https://zeabur.com/templates/0X2ZY8">
+  <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="30"/>
+</a>
+<a href="https://template.cloud.sealos.io/deploy?templateName=librechat">
+  <img src="https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg" alt="Deploy on Sealos" height="30">
+</a>
+</p>
 
-## Local Setup
+<p align="center">
+  <a href="https://www.librechat.ai/docs/translation">
+    <img 
+      src="https://img.shields.io/badge/dynamic/json.svg?style=for-the-badge&color=2096F3&label=locize&query=%24.translatedPercentage&url=https://api.locize.app/badgedata/4cb2598b-ed4d-469c-9b04-2ed531a8cb45&suffix=%+translated" 
+      alt="Translation Progress">
+  </a>
+</p>
 
-```bash
-npm install
-copy .env.example .env.local
-npm run dev
-```
 
-Open `http://localhost:3000`.
+# ✨ Features
 
-Local development works without Postgres. JSON data is stored under `.data/`, which is ignored by git. In production, set `DATABASE_URL` and `STORAGE_DRIVER=postgres`.
+- 🖥️ **UI & Experience** inspired by ChatGPT with enhanced design and features
 
-## Required Production Variables
+- 🤖 **AI Model Selection**:  
+  - Anthropic (Claude), AWS Bedrock, OpenAI, Azure OpenAI, Google, Vertex AI, OpenAI Responses API (incl. Azure)
+  - [Custom Endpoints](https://www.librechat.ai/docs/quick_start/custom_endpoints): Use any OpenAI-compatible API with LibreChat, no proxy required
+  - Compatible with [Local & Remote AI Providers](https://www.librechat.ai/docs/configuration/librechat_yaml/ai_endpoints):
+    - Ollama, groq, Cohere, Mistral AI, Apple MLX, koboldcpp, together.ai,
+    - OpenRouter, Helicone, Perplexity, ShuttleAI, Deepseek, Qwen, and more
 
-Set these on Railway:
+- 🔧 **[Code Interpreter API](https://www.librechat.ai/docs/features/code_interpreter)**: 
+  - Secure, Sandboxed Execution in Python, Node.js (JS/TS), Go, C/C++, Java, PHP, Rust, and Fortran
+  - Seamless File Handling: Upload, process, and download files directly
+  - No Privacy Concerns: Fully isolated and secure execution
+  - Open-Source & Self-Hostable: powered by [ClickHouse/code-interpreter](https://github.com/ClickHouse/code-interpreter)
 
-```bash
-NEXT_PUBLIC_SITE_URL=https://your-domain.example
-TRON_RECEIVER_ADDRESS=TBGVxoH2Sc6MVHmMtjRsAUZitTQxGEUZUG
-TRONSCAN_API_KEY=replace_with_rotated_tronscan_key
-TRONSCAN_API_BASE=https://apilist.tronscanapi.com
-USDT_TRC20_CONTRACT=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
-DATABASE_URL=${{Postgres.DATABASE_URL}}
-STORAGE_DRIVER=postgres
-SESSION_SECRET=replace_with_random_32_byte_secret
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=replace_with_long_admin_password
-DOWNLOAD_SECRET=replace_with_random_32_byte_secret
-ORDER_HMAC_SECRET=replace_with_random_32_byte_secret
-AI_PROVIDER_ORDER=agentrouter,openrouter,groq,gemini,mistral,anthropic,openai,custom,ollama,pollinations,local
-AI_LOCAL_FALLBACK=enabled
-AGENTROUTER_API_KEY=replace_with_agentrouter_key
-AGENTROUTER_BASE_URL=https://agentrouter.org/v1
-AGENTROUTER_MODEL=gpt-5
-OPENROUTER_API_KEY=
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_MODEL=openrouter/free
-GROQ_API_KEY=
-GROQ_BASE_URL=https://api.groq.com/openai/v1
-GROQ_MODEL=llama-3.1-8b-instant
-GEMINI_API_KEY=
-GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-GEMINI_MODEL=gemini-2.0-flash
-MISTRAL_API_KEY=
-MISTRAL_BASE_URL=https://api.mistral.ai/v1
-MISTRAL_MODEL=mistral-small-latest
-ANTHROPIC_API_KEY=
-ANTHROPIC_BASE_URL=https://api.anthropic.com/v1
-ANTHROPIC_MODEL=claude-3-5-haiku-latest
-OPENAI_API_KEY=
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL=gpt-4o-mini
-AI_CUSTOM_LABEL=
-AI_CUSTOM_API_KEY=
-AI_CUSTOM_BASE_URL=
-AI_CUSTOM_MODEL=
-OLLAMA_ENABLED=false
-OLLAMA_BASE_URL=
-OLLAMA_MODEL=llama3.1
-OLLAMA_API_KEY=
-POLLINATIONS_ENABLED=enabled
-POLLINATIONS_BASE_URL=https://text.pollinations.ai/openai
-POLLINATIONS_MODEL=gpt-oss-20b
-POLLINATIONS_API_KEY=
-POLLINATIONS_REFERRER=
-POLLINATIONS_PRIVATE=true
-AI_FREE_DAILY_LIMIT=20
-AI_PRO_DAILY_LIMIT=100
-```
+- 🔦 **Agents & Tools Integration**:  
+  - **[LibreChat Agents](https://www.librechat.ai/docs/features/agents)**:
+    - No-Code Custom Assistants: Build specialized, AI-driven helpers
+    - Agent Marketplace: Discover and deploy community-built agents
+    - Collaborative Sharing: Share agents with specific users and groups
+    - Flexible & Extensible: Use MCP Servers, tools, file search, code execution, and more
+    - [Skills](https://www.librechat.ai/docs/features/skills): Create reusable `SKILL.md` instruction bundles for manual, automatic, or always-on agent workflows
+    - [Subagents](https://www.librechat.ai/docs/features/subagents): Delegate focused work to isolated child agent runs with their own context windows
+    - Compatible with Custom Endpoints, OpenAI, Azure, Anthropic, AWS Bedrock, Google, Vertex AI, Responses API, and more
+    - [Model Context Protocol (MCP) Support](https://modelcontextprotocol.io/clients#librechat) for Tools
 
-Rotate shared API keys before production. TRONSCAN and AI provider keys must remain server-side environment variables.
+- 🔍 **Web Search**:  
+  - Search the internet and retrieve relevant information to enhance your AI context
+  - Combines search providers, content scrapers, and result rerankers for optimal results
+  - **Customizable Jina Reranking**: Configure custom Jina API URLs for reranking services
+  - **[Learn More →](https://www.librechat.ai/docs/features/web_search)**
 
-## Auth And Entitlements
+- 🪄 **Generative UI with Code Artifacts**:  
+  - [Code Artifacts](https://youtu.be/GfTj7O4gmd0?si=WJbdnemZpJzBrJo3) allow creation of React, HTML, and Mermaid diagrams directly in chat
 
-- `/register`, `/login`, `/logout`, `/account`, and `/account/orders` manage user access.
-- `POST /api/orders` requires login and attaches the order to the current user.
-- Digital products create permanent product entitlements after payment.
-- `AI Pro Pass - 30 Days` creates a 30-day `ai_pro` entitlement.
-- `/admin` is not linked in the public navigation and requires an admin session.
-- If `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set, the first admin account is bootstrapped automatically.
+- 🎨 **Image Generation & Editing**
+  - Text-to-image and image-to-image with [GPT-Image-1](https://www.librechat.ai/docs/features/image_gen#1--openai-image-tools-recommended)
+  - Text-to-image with [DALL-E (3/2)](https://www.librechat.ai/docs/features/image_gen#2--dalle-legacy), [Stable Diffusion](https://www.librechat.ai/docs/features/image_gen#3--stable-diffusion-local), [Flux](https://www.librechat.ai/docs/features/image_gen#4--flux), or any [MCP server](https://www.librechat.ai/docs/features/image_gen#5--model-context-protocol-mcp)
+  - Produce stunning visuals from prompts or refine existing images with a single instruction
 
-## Payment Verification
+- 💾 **Presets & Context Management**:  
+  - Create, Save, & Share Custom Presets  
+  - Switch between AI Endpoints and Presets mid-chat
+  - Edit, Resubmit, and Continue Messages with Conversation branching  
+  - Create and share prompts with specific users and groups
+  - [Fork Messages & Conversations](https://www.librechat.ai/docs/features/fork) for Advanced Context control
 
-Each order gets a 45-minute payment window and a unique expected USDT amount. The verification route checks:
+- 💬 **Multimodal & File Interactions**:  
+  - Upload and analyze images with Claude 3, GPT-4.5, GPT-4o, o1, Llama-Vision, and Gemini 📸  
+  - Chat with Files using Custom Endpoints, OpenAI, Azure, Anthropic, AWS Bedrock, & Google 🗃️
 
-- receiver wallet matches `TRON_RECEIVER_ADDRESS`
-- token contract matches USDT TRC20
-- amount exactly matches the order amount
-- transfer timestamp is after order creation
-- transaction hash has not been used before
-- current user owns the order
+- 🌎 **Multilingual UI**:
+  - English, 中文 (简体), 中文 (繁體), العربية, Deutsch, Español, Français, Italiano
+  - Polski, Português (PT), Português (BR), Русский, 日本語, Svenska, 한국어, Tiếng Việt
+  - Türkçe, Nederlands, עברית, Català, Čeština, Dansk, Eesti, فارسی
+  - Suomi, Magyar, Հայերեն, Bahasa Indonesia, ქართული, Latviešu, ไทย, ئۇيغۇرچە
 
-Development-only mock verification:
+- 🧠 **Reasoning UI**:  
+  - Dynamic Reasoning UI for Chain-of-Thought/Reasoning AI models like DeepSeek-R1
 
-```bash
-POST /api/orders/{orderId}/verify?mock=paid
-```
+- 🎨 **Customizable Interface**:  
+  - Customizable Dropdown & Interface that adapts to both power users and newcomers
 
-This shortcut is disabled when `NODE_ENV=production`.
+- 🌊 **[Resumable Streams](https://www.librechat.ai/docs/features/resumable_streams)**:  
+  - Never lose a response: AI responses automatically reconnect and resume if your connection drops
+  - Multi-Tab & Multi-Device Sync: Open the same chat in multiple tabs or pick up on another device
+  - Production-Ready: Works from single-server setups to horizontally scaled deployments with Redis
 
-Admins can manually approve a pending or expired order from `/admin` after checking the external wallet or exchange
-evidence. Manual approval creates the same account entitlement as automated TRONSCAN verification.
+- 🗣️ **Speech & Audio**:  
+  - Chat hands-free with Speech-to-Text and Text-to-Speech  
+  - Automatically send and play Audio  
+  - Supports OpenAI, Azure OpenAI, and Elevenlabs
 
-## Cyber AI Workspace
+- 📥 **Import & Export Conversations**:  
+  - Import Conversations from LibreChat, ChatGPT, Chatbot UI  
+  - Export conversations as screenshots, markdown, text, json
 
-`/assistant/cyber-ai` requires login and provides a full chat workspace with conversation history, agent selection, provider selection, text file attach, Markdown export, approved memory, and local knowledge retrieval.
+- 🔍 **Search & Discovery**:  
+  - Search all messages/conversations
 
-- Free users: `AI_FREE_DAILY_LIMIT`, default 20 requests/day.
-- AI Pro users: `AI_PRO_DAILY_LIMIT`, default 100 requests/day.
-- Conversations are stored for the signed-in account. Reusable memory is only created after the user approves a memory suggestion.
-- The first RAG layer uses approved memories plus built-in defensive knowledge with keyword scoring, so it does not require pgvector or embedding API costs.
-- The server-side safety layer refuses malware, phishing, credential theft, persistence, harmful automation, and unauthorized exploitation requests.
-- The provider chain is controlled by `AI_PROVIDER_ORDER`. Pollinations Free Cloud is enabled by default as a no-key external model fallback. Its adapter first tries Chat Completions, then the direct text endpoint, before falling back to offline local guidance. If every external provider fails or is not configured, `local` returns deterministic guidance instead of a broken 502 page.
-- AgentRouter is configured as `https://agentrouter.org/v1` with model `gpt-5` by default. Override any provider model or base URL through environment variables.
-- The workspace supports these built-in agents: General Assistant, Security Analyst, Code Reviewer, Software Engineer, AppSec Architect, Scope Guard, Report Writer, Threat Modeler, API Risk Mapper, Bug Bounty Coach, Cloud Hardening, Incident Responder, Privacy Reviewer, DevOps SRE, and Knowledge Curator.
+- 👥 **Multi-User & Secure Access**:
+  - Multi-User, Secure Authentication with OAuth2, LDAP, & Email Login Support
+  - Built-in Moderation, and Token spend tools
 
-Workspace APIs:
+- 🎛️ **[Admin Panel](https://www.librechat.ai/docs/features/admin_panel)**:
+  - Browser-based UI to manage users, groups, roles, and configuration overrides
+  - Edit settings and per-role/group permissions live, without redeploying
+  - Bundled with the Docker Compose stacks for one-command setup
 
-- `GET/POST /api/ai/conversations`
-- `GET/POST /api/ai/conversations/{id}/messages`
-- `GET /api/ai/memories`
-- `POST /api/ai/memories/{id}/approve`
-- `POST /api/ai/memories/{id}/delete`
-- `POST /api/ai/cyber-security` remains available as a compatibility endpoint.
+- ⚙️ **Configuration & Deployment**:  
+  - Configure Proxy, Reverse Proxy, Docker, & many Deployment options  
+  - Use [S3 with CloudFront](https://www.librechat.ai/docs/configuration/cdn/cloudfront) for stable media links, edge delivery, signed cookies, and secured downloads
+  - Use completely local or deploy on the cloud
 
-## Railway Notes
+- 📖 **Open-Source & Community**:  
+  - Completely Open-Source & Built in Public  
+  - Community-driven development, support, and feedback
 
-The repository includes `railway.json`, `nixpacks.toml`, `npm run start`, and `/api/health`. Add a Postgres database on Railway, set the variables above, and the app creates required tables automatically.
+[For a thorough review of our features, see our docs here](https://docs.librechat.ai/) 📚
 
-## Verification
+## 🪶 All-In-One AI Conversations with LibreChat
 
-```bash
-npm run verify
-npm run smoke
-```
+LibreChat is a self-hosted AI chat platform that unifies all major AI providers in a single, privacy-focused interface.
 
-`npm run verify` runs TypeScript checks, Node tests, and a production build. `npm run smoke` runs Playwright against a local dev server.
+Beyond chat, LibreChat provides AI Agents, Model Context Protocol (MCP) support, Artifacts, Code Interpreter, custom actions, conversation search, and enterprise-ready multi-user authentication.
+
+Open source, actively developed, and built for anyone who values control over their AI infrastructure.
+
+---
+
+## 🌐 Resources
+
+**GitHub Repo:**
+  - **RAG API:** [github.com/danny-avila/rag_api](https://github.com/danny-avila/rag_api)
+  - **Website:** [github.com/LibreChat-AI/librechat.ai](https://github.com/LibreChat-AI/librechat.ai)
+
+**Other:**
+  - **Website:** [librechat.ai](https://librechat.ai)
+  - **Documentation:** [librechat.ai/docs](https://librechat.ai/docs)
+  - **Blog:** [librechat.ai/blog](https://librechat.ai/blog)
+
+---
+
+## 📝 Changelog
+
+Keep up with the latest updates by visiting the releases page and notes:
+- [Releases](https://github.com/danny-avila/LibreChat/releases)
+- [Changelog](https://www.librechat.ai/changelog) 
+
+**⚠️ Please consult the [changelog](https://www.librechat.ai/changelog) for breaking changes before updating.**
+
+---
+
+## ⭐ Star History
+
+<p align="center">
+  <a href="https://www.star-history.com/?type=date&repos=danny-avila%2FLibreChat">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=danny-avila/LibreChat&type=date&theme=dark&legend=top-left&sealed_token=CXsk3L39t1nlibOv3pQloYwrz8R_yXxCAe1X3DG8sEnmu3PZvzSRZGf7JvisknF83yXqMwR6IcuKLolIQBulChAOseTYP1TDglfT6clOHXzspF-DJhmmsnGasrGpLfCeOEU56Bx761CJp9xDxza5rbyXW3F1GqWNtDf9pMroBq86vS70ilRWu16VyucF" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=danny-avila/LibreChat&type=date&legend=top-left&sealed_token=CXsk3L39t1nlibOv3pQloYwrz8R_yXxCAe1X3DG8sEnmu3PZvzSRZGf7JvisknF83yXqMwR6IcuKLolIQBulChAOseTYP1TDglfT6clOHXzspF-DJhmmsnGasrGpLfCeOEU56Bx761CJp9xDxza5rbyXW3F1GqWNtDf9pMroBq86vS70ilRWu16VyucF" />
+      <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=danny-avila/LibreChat&type=date&legend=top-left&sealed_token=CXsk3L39t1nlibOv3pQloYwrz8R_yXxCAe1X3DG8sEnmu3PZvzSRZGf7JvisknF83yXqMwR6IcuKLolIQBulChAOseTYP1TDglfT6clOHXzspF-DJhmmsnGasrGpLfCeOEU56Bx761CJp9xDxza5rbyXW3F1GqWNtDf9pMroBq86vS70ilRWu16VyucF" />
+    </picture>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://trendshift.io/repositories/4685" target="_blank" style="padding: 10px;">
+    <img src="https://trendshift.io/api/badge/repositories/4685" alt="danny-avila%2FLibreChat | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
+  </a>
+  <a href="https://runacap.com/ross-index/q1-24/" target="_blank" rel="noopener" style="margin-left: 20px;">
+    <img style="width: 260px; height: 56px" src="https://runacap.com/wp-content/uploads/2024/04/ROSS_badge_white_Q1_2024.svg" alt="ROSS Index - Fastest Growing Open-Source Startups in Q1 2024 | Runa Capital" width="260" height="56"/>
+  </a>
+</p>
+
+---
+
+## ✨ Contributions
+
+Contributions, suggestions, bug reports and fixes are welcome!
+
+For new features, components, or extensions, please open an issue and discuss before sending a PR.
+
+If you'd like to help translate LibreChat into your language, we'd love your contribution! Improving our translations not only makes LibreChat more accessible to users around the world but also enhances the overall user experience. Please check out our [Translation Guide](https://www.librechat.ai/docs/translation).
+
+---
+
+## 💖 This project exists in its current state thanks to all the people who contribute
+
+<a href="https://github.com/danny-avila/LibreChat/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=danny-avila/LibreChat" />
+</a>
+
+---
+
+## 🎉 Special Thanks
+
+We thank [Locize](https://locize.com) for their translation management tools that support multiple languages in LibreChat.
+
+<p align="center">
+  <a href="https://locize.com" target="_blank" rel="noopener noreferrer">
+    <img src="https://github.com/user-attachments/assets/d6b70894-6064-475e-bb65-92a9e23e0077" alt="Locize Logo" height="50">
+  </a>
+</p>
