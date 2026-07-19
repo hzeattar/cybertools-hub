@@ -81,6 +81,7 @@ POLLINATIONS_BASE_URL=https://text.pollinations.ai/openai
 POLLINATIONS_MODEL=gpt-oss-20b
 POLLINATIONS_API_KEY=
 POLLINATIONS_REFERRER=
+POLLINATIONS_PRIVATE=true
 AI_FREE_DAILY_LIMIT=20
 AI_PRO_DAILY_LIMIT=100
 ```
@@ -127,7 +128,7 @@ evidence. Manual approval creates the same account entitlement as automated TRON
 - Conversations are stored for the signed-in account. Reusable memory is only created after the user approves a memory suggestion.
 - The first RAG layer uses approved memories plus built-in defensive knowledge with keyword scoring, so it does not require pgvector or embedding API costs.
 - The server-side safety layer refuses malware, phishing, credential theft, persistence, harmful automation, and unauthorized exploitation requests.
-- The provider chain is controlled by `AI_PROVIDER_ORDER`. Pollinations Free Cloud is enabled by default as a no-key external model fallback. If every external provider fails or is not configured, `local` returns deterministic guidance instead of a broken 502 page.
+- The provider chain is controlled by `AI_PROVIDER_ORDER`. Pollinations Free Cloud is enabled by default as a no-key external model fallback. Its adapter first tries Chat Completions, then the direct text endpoint, before falling back to offline local guidance. If every external provider fails or is not configured, `local` returns deterministic guidance instead of a broken 502 page.
 - AgentRouter is configured as `https://agentrouter.org/v1` with model `gpt-5` by default. Override any provider model or base URL through environment variables.
 - The workspace supports these built-in agents: General Assistant, Security Analyst, Code Reviewer, Software Engineer, AppSec Architect, Scope Guard, Report Writer, Threat Modeler, API Risk Mapper, Bug Bounty Coach, Cloud Hardening, Incident Responder, Privacy Reviewer, DevOps SRE, and Knowledge Curator.
 

@@ -395,6 +395,45 @@ async function callAnthropicProvider(
   }
 }
 
+async function callPollinationsProvider(
+  config: ProviderConfig,
+  input: { message: string; system: string; conversationHistory?: { role: "user" | "assistant"; content: string }[] },
+) {
+  try {
+    return await callOpenAiCompatibleProvider(config, input);
+  } catch (chatError) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30_000);
+    const textBaseUrl = config.baseUrl.replace(/\/openai$/i, "");
+    const history = input.conversationHistory?.slice(-4).map((item) => `${item.role}: ${item.content}`).join("\n\n");
+    const prompt = [input.system, history ? `Recent conversation:\n${history}` : "", `User request:\n${input.message}`]
+      .filter(Boolean)
+      .join("\n\n")
+      .slice(0, 6_000);
+    const url = new URL(`${textBaseUrl}/${encodeURIComponent(prompt)}`);
+    url.searchParams.set("model", config.model);
+    if (process.env.POLLINATIONS_PRIVATE !== "false") url.searchParams.set("private", "true");
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: config.headers,
+        signal: controller.signal,
+      });
+      const text = (await response.text()).trim();
+      if (!response.ok) {
+        throw new Error(`${config.label} text endpoint returned ${response.status}${text ? `: ${text.slice(0, 120)}` : ""}`);
+      }
+      if (!text) throw new Error(`${config.label} text endpoint returned an empty response.`);
+      return text;
+    } catch (textError) {
+      throw new Error(`${(chatError as Error).message}; ${(textError as Error).message}`);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+}
+
 function parseJsonObject(text: string) {
   try {
     return JSON.parse(text) as Record<string, unknown>;
@@ -518,7 +557,13 @@ export async function callCyberAi(input: CyberAiRequest): Promise<CyberAiResult>
 
     try {
       const answer =
-        config.kind === "anthropic"
+        config.provider === "pollinations"
+          ? await callPollinationsProvider(config, {
+              message: clipped,
+              system,
+              conversationHistory: input.conversationHistory,
+            })
+          : config.kind === "anthropic"
           ? await callAnthropicProvider(config, {
               message: clipped,
               system,
