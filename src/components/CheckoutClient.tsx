@@ -6,6 +6,14 @@ import Image from "next/image";
 import QRCode from "qrcode";
 import type { Order } from "@/lib/payment";
 
+function formatUtcTime(value: string) {
+  const date = new Date(value);
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds} UTC`;
+}
+
 export function CheckoutClient({ initialOrder }: { initialOrder: Order }) {
   const [order, setOrder] = useState(initialOrder);
   const [downloadToken, setDownloadToken] = useState<string | null>(null);
@@ -57,7 +65,7 @@ export function CheckoutClient({ initialOrder }: { initialOrder: Order }) {
           </div>
           <div className="metric">
             <span>Expires</span>
-            <strong>{new Date(order.expiresAt).toLocaleTimeString()}</strong>
+            <strong>{formatUtcTime(order.expiresAt)}</strong>
           </div>
         </div>
 
