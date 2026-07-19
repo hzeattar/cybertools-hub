@@ -215,6 +215,8 @@ export function CyberAiClient({ signedIn, pro }: Props) {
       .filter((conversation) => !needle || conversation.title.toLowerCase().includes(needle))
       .map((conversation) => ({ ...conversation, age: formatDate(conversation.updatedAt) }));
   }, [conversations, searchTerm]);
+  const successfulProviderAttempts = providerAttempts.filter((attempt) => attempt.status === "success");
+  const otherProviderAttempts = providerAttempts.filter((attempt) => attempt.status !== "success");
 
   useEffect(() => {
     if (!signedIn) return;
@@ -729,13 +731,29 @@ export function CyberAiClient({ signedIn, pro }: Props) {
           </p>
           <div className="provider-attempts">
             {providerAttempts.length ? (
-              providerAttempts.map((attempt, index) => (
-                <div className={`provider-attempt ${attempt.status}`} key={`${attempt.provider}-${index}`}>
-                  <span>{attempt.label}</span>
-                  <strong>{attempt.status}</strong>
-                  {attempt.detail ? <small>{attempt.detail}</small> : null}
-                </div>
-              ))
+              <>
+                {successfulProviderAttempts.map((attempt, index) => (
+                  <div className={`provider-attempt ${attempt.status}`} key={`${attempt.provider}-${index}`}>
+                    <span>{attempt.label}</span>
+                    <strong>{attempt.status}</strong>
+                    {attempt.detail ? <small>{attempt.detail}</small> : null}
+                  </div>
+                ))}
+                {otherProviderAttempts.length ? (
+                  <details className="route-details">
+                    <summary>Route details ({otherProviderAttempts.length})</summary>
+                    <div className="route-detail-list">
+                      {otherProviderAttempts.map((attempt, index) => (
+                        <div className={`provider-attempt ${attempt.status}`} key={`${attempt.provider}-${index}`}>
+                          <span>{attempt.label}</span>
+                          <strong>{attempt.status}</strong>
+                          {attempt.detail ? <small>{attempt.detail}</small> : null}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
+              </>
             ) : (
               <p className="muted">Send a message to see the provider route.</p>
             )}
