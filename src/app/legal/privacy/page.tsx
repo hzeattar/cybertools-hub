@@ -26,9 +26,14 @@ export default function PrivacyPage() {
               and download token hashes.
             </p>
             <p>
-              Cyber AI prompts can be sent to the configured AI provider chain to generate responses. If local fallback
-              is used, no external model request is made. CyberTools Hub does not store prompt text by default. Do not
-              paste private keys, live credentials, or third-party personal data.
+              Cyber AI Workspace stores conversation messages for your account so you can continue prior chats. Prompts
+              can be sent to the configured AI provider chain to generate responses. If local fallback is used, no
+              external model request is made.
+            </p>
+            <p>
+              Cyber AI may suggest reusable memory, but it is not stored as permanent memory unless you approve it.
+              Memory suggestions can be deleted. Do not paste private keys, live credentials, or third-party personal
+              data.
             </p>
             <p>
               Server logs may include IP address, browser metadata, and API route timestamps for security and abuse

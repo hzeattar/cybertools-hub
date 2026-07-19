@@ -29,6 +29,10 @@ export default function TermsPage() {
               exploitation are not allowed.
             </p>
             <p>
+              Cyber AI memory is user-approved context retrieval, not automatic model training. You are responsible for
+              approving only stable, non-secret context and deleting memory suggestions that should not be reused.
+            </p>
+            <p>
               AI output can come from configured external providers or the local defensive fallback. You must review
               results before relying on them for reports, remediation decisions, or customer communication.
             </p>

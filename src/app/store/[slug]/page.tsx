@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProduct, products } from "@/data/catalog";
 import { SiteShell } from "@/components/SiteShell";
@@ -60,7 +61,10 @@ export default async function ProductPage({ params }: PageProps) {
             </div>
             <StoreClient productSlug={product.slug} signedIn={Boolean(user)} owned={owned} />
           </div>
-          <aside className="panel">
+          <aside className="panel product-detail-panel">
+            <div className="product-detail-image">
+              <Image src={product.image} alt={`${product.name} product preview`} width={900} height={600} priority />
+            </div>
             <h2 style={{ fontSize: 24, fontWeight: 800 }}>What is included</h2>
             <ul style={{ marginTop: 14, paddingLeft: 18 }}>
               {product.deliverables.map((item) => (

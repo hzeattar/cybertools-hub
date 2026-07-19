@@ -10,7 +10,7 @@ test("public pages and auth guards render", async ({ page }) => {
 
   await page.goto("/assistant/cyber-ai", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "Cyber AI Analyst" })).toBeVisible();
-  await expect(page.getByText(/Login is required/i)).toBeVisible();
+  await expect(page.getByText(/Login required/i)).toBeVisible();
 
   await page.goto("/account", { waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/\/login/);
@@ -25,4 +25,23 @@ test("registration creates an account and account page loads", async ({ page }) 
   await page.getByRole("button", { name: /Create account/i }).click();
   await expect(page).toHaveURL(/\/account/, { timeout: 30_000 });
   await expect(page.getByText(email)).toBeVisible();
+
+  await page.goto("/assistant/cyber-ai", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("ai-workspace")).toBeVisible();
+  await expect(page.getByText(/Start a new security conversation|Conversation loaded/i)).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByRole("button", { name: /^Send$/i })).toBeEnabled({ timeout: 30_000 });
+  await page.getByLabel("Message Cyber AI").fill(
+    "Remember my project stack uses Next.js and Railway. Review missing Content-Security-Policy on my own app.",
+  );
+  await page.getByRole("button", { name: /^Send$/i }).click();
+  await expect(page.getByText(/Cyber AI Local Analyst|Risk priorities/i)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Memory suggestions/i)).toBeVisible();
+  const approveResponse = page.waitForResponse(
+    (response) => response.url().includes("/api/ai/memories/") && response.url().includes("/approve"),
+  );
+  await page.getByLabel("Approve memory").first().click();
+  await expect((await approveResponse).ok()).toBeTruthy();
+  await expect(page.getByText("Memory approved and will be used as context.")).toBeVisible({ timeout: 30_000 });
 });

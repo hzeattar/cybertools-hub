@@ -8,6 +8,7 @@ CyberTools Hub is a Next.js security tools platform with account-based USDT TRC2
 - Account registration and login with HttpOnly signed sessions.
 - User-owned orders, signed downloads, and entitlement tracking.
 - AI Pro Pass for 30-day higher Cyber AI limits.
+- Claude-like Cyber AI Workspace with conversations, defensive agents, user-approved memory, keyword RAG, and provider fallback.
 - Cyber AI provider routing: AgentRouter, OpenRouter, Groq, then local defensive fallback.
 - TRONSCAN-backed USDT TRC20 payment verification.
 - Postgres-ready production storage and local JSON dev storage.
@@ -87,16 +88,26 @@ POST /api/orders/{orderId}/verify?mock=paid
 
 This shortcut is disabled when `NODE_ENV=production`.
 
-## Cyber AI Analyst
+## Cyber AI Workspace
 
-`/assistant/cyber-ai` requires login before calling `POST /api/ai/cyber-security`.
+`/assistant/cyber-ai` requires login and provides conversation history, defensive agent selection, approved memory, and local knowledge retrieval.
 
 - Free users: `AI_FREE_DAILY_LIMIT`, default 20 requests/day.
 - AI Pro users: `AI_PRO_DAILY_LIMIT`, default 100 requests/day.
-- Prompts are not stored by CyberTools Hub; only daily usage counters are stored.
+- Conversations are stored for the signed-in account. Reusable memory is only created after the user approves a memory suggestion.
+- The first RAG layer uses approved memories plus built-in defensive knowledge with keyword scoring, so it does not require pgvector or embedding API costs.
 - The server-side safety layer refuses malware, phishing, credential theft, persistence, harmful automation, and unauthorized exploitation requests.
 - The provider chain is controlled by `AI_PROVIDER_ORDER`. If external providers fail or are not configured, `local` returns deterministic defensive guidance instead of a broken 502 page.
 - AgentRouter docs currently show `https://agentrouter.org/v1` with model `gpt-5`. OpenRouter can be used as a free-tier fallback with `OPENROUTER_API_KEY` and `OPENROUTER_MODEL=openrouter/free`.
+
+Workspace APIs:
+
+- `GET/POST /api/ai/conversations`
+- `GET/POST /api/ai/conversations/{id}/messages`
+- `GET /api/ai/memories`
+- `POST /api/ai/memories/{id}/approve`
+- `POST /api/ai/memories/{id}/delete`
+- `POST /api/ai/cyber-security` remains available as a compatibility endpoint.
 
 ## Railway Notes
 

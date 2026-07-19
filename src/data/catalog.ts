@@ -23,6 +23,7 @@ export type Product = {
   name: string;
   kind: "product" | "ai_pro";
   priceUsdt: number;
+  image: string;
   summary: string;
   audience: string;
   deliverables: string[];
@@ -446,6 +447,7 @@ export const products: Product[] = [
     name: "Bug Bounty Starter Kit",
     kind: "product",
     priceUsdt: 9.99,
+    image: "/images/product-bug-bounty-starter.webp",
     summary: "A compact starter pack for choosing programs, reading scope, and writing first reports.",
     audience: "New security researchers who want clean process without noisy testing.",
     deliverables: [
@@ -461,6 +463,7 @@ export const products: Product[] = [
     name: "API Security Checklist Pack",
     kind: "product",
     priceUsdt: 14.99,
+    image: "/images/product-api-checklist.webp",
     summary: "API review worksheets for object authorization, exports, webhooks, and account flows.",
     audience: "Researchers and small teams reviewing APIs with limited time.",
     deliverables: [
@@ -476,6 +479,7 @@ export const products: Product[] = [
     name: "Professional Vulnerability Report Templates",
     kind: "product",
     priceUsdt: 19.99,
+    image: "/images/product-report-templates.webp",
     summary: "High-signal report templates for access control, auth, CORS, headers, and business logic.",
     audience: "Researchers who want reports that triage teams can reproduce quickly.",
     deliverables: [
@@ -491,6 +495,7 @@ export const products: Product[] = [
     name: "Full Security Research Bundle",
     kind: "product",
     priceUsdt: 29.99,
+    image: "/images/product-full-bundle.webp",
     summary: "Every V1 digital product bundled with upgrade notes and launch checklists.",
     audience: "Researchers building a repeatable bug bounty workflow.",
     deliverables: [
@@ -506,6 +511,7 @@ export const products: Product[] = [
     name: "AI Pro Pass - 30 Days",
     kind: "ai_pro",
     priceUsdt: 19.99,
+    image: "/images/product-ai-pro-pass.webp",
     summary: "Unlock higher daily limits and larger context for Cyber AI Analyst for 30 days.",
     audience: "Security researchers who want deeper AI-assisted review without exposing prompts publicly.",
     deliverables: [

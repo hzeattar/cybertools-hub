@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { featuredTools, guides, products, tools } from "@/data/catalog";
 import { SiteShell } from "@/components/SiteShell";
 
@@ -40,32 +41,19 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <div className="terminal-panel" aria-label="Live workflow preview">
-            <div className="terminal-row">
-              <strong>Cyber AI Analyst</strong>
-              <span>defensive review</span>
+          <aside className="hero-visual panel" aria-label="Cyber AI workspace preview">
+            <Image
+              src="/images/cyber-ai-workspace-hero.webp"
+              alt="Cyber AI workspace with conversations, memory context, and provider status panels"
+              width={1600}
+              height={1067}
+              priority
+            />
+            <div className="hero-visual-caption">
+              <span className="tag teal">New V3 workspace</span>
+              <strong>Chats, agents, approved memory, and provider fallback in one console.</strong>
             </div>
-            <div className="terminal-row">
-              <strong>Scope Guard</strong>
-              <span>policy to checklist</span>
-            </div>
-            <div className="terminal-row">
-              <strong>Header Analyzer</strong>
-              <span>risk-ranked output</span>
-            </div>
-            <div className="terminal-row">
-              <strong>Report Builder</strong>
-              <span>redacted evidence</span>
-            </div>
-            <div className="terminal-row">
-              <strong>USDT Checkout</strong>
-              <span>unique amount match</span>
-            </div>
-            <div className="terminal-row">
-              <strong>Downloads</strong>
-              <span>signed token delivery</span>
-            </div>
-          </div>
+          </aside>
         </div>
       </section>
 
@@ -106,9 +94,12 @@ export default function Home() {
               Store
             </Link>
           </div>
-          <div className="grid grid-4">
+          <div className="grid product-grid">
             {products.map((product) => (
               <Link className="card product-card" href={`/store/${product.slug}`} key={product.slug}>
+                <span className="product-thumb">
+                  <Image src={product.image} alt={`${product.name} preview`} width={900} height={600} loading="eager" />
+                </span>
                 <span className="price">{product.priceUsdt.toFixed(2)} USDT</span>
                 <h3>{product.name}</h3>
                 <p className="muted">{product.summary}</p>

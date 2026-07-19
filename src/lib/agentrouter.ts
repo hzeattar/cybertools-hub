@@ -11,6 +11,8 @@ export type CyberAiProvider = "agentrouter" | "openrouter" | "groq" | "local";
 export type CyberAiRequest = {
   message: string;
   plan: CyberAiPlan;
+  agentInstruction?: string;
+  context?: string;
 };
 
 export type CyberAiResult = {
@@ -119,7 +121,7 @@ function getProviderConfig(provider: Exclude<CyberAiProvider, "local">): Provide
   };
 }
 
-async function callOpenAiCompatibleProvider(config: ProviderConfig, message: string) {
+async function callOpenAiCompatibleProvider(config: ProviderConfig, input: { message: string; system: string }) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
 
@@ -136,11 +138,11 @@ async function callOpenAiCompatibleProvider(config: ProviderConfig, message: str
         messages: [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: input.system,
           },
           {
             role: "user",
-            content: message,
+            content: input.message,
           },
         ],
         temperature: 0.2,
@@ -251,12 +253,16 @@ export async function callCyberAi(input: CyberAiRequest): Promise<CyberAiResult>
   }
 
   const clipped = input.message.slice(0, maxPromptLength(input.plan));
+  const system = [SYSTEM_PROMPT, input.agentInstruction, input.context ? `Relevant approved memory and knowledge:\n${input.context}` : ""]
+    .filter(Boolean)
+    .join("\n\n");
+  const localMessage = input.context ? `${input.context}\n\nUser request:\n${clipped}` : clipped;
   const failures: string[] = [];
 
   for (const provider of getProviderOrder()) {
     if (provider === "local") {
       return {
-        answer: buildLocalCyberAnalysis(clipped, input.plan, failures),
+        answer: buildLocalCyberAnalysis(localMessage, input.plan, failures),
         refused: false,
         provider: "local",
         providerLabel: "Local Cyber Analyst",
@@ -271,7 +277,7 @@ export async function callCyberAi(input: CyberAiRequest): Promise<CyberAiResult>
     }
 
     try {
-      const answer = await callOpenAiCompatibleProvider(config, clipped);
+      const answer = await callOpenAiCompatibleProvider(config, { message: clipped, system });
       return {
         answer,
         refused: false,

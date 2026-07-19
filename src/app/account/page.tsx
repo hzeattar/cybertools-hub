@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { products } from "@/data/catalog";
 import { SiteShell } from "@/components/SiteShell";
@@ -65,6 +66,11 @@ export default async function AccountPage() {
                 const token = issueDownloadToken({ id: entitlement.sourceOrderId, productSlug: entitlement.productSlug });
                 return (
                   <article className="card product-card" key={entitlement.id}>
+                    {product ? (
+                      <span className="product-thumb">
+                        <Image src={product.image} alt={`${product.name} preview`} width={900} height={600} loading="eager" />
+                      </span>
+                    ) : null}
                     <span className="tag teal">owned</span>
                     <h3>{product?.name ?? entitlement.productSlug}</h3>
                     <p className="muted">{product?.summary ?? "Digital product entitlement."}</p>

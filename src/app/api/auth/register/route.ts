@@ -5,7 +5,7 @@ import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "local";
-  const limit = rateLimit(`register:${ip}`, 6, 60_000);
+  const limit = rateLimit(`register:${ip}`, process.env.NODE_ENV === "production" ? 6 : 100, 60_000);
   if (!limit.ok) return NextResponse.json({ error: "Too many registration attempts." }, { status: 429 });
 
   const body = (await request.json().catch(() => null)) as { email?: string; password?: string } | null;

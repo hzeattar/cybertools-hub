@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { CyberAiClient } from "@/components/CyberAiClient";
 import { SiteShell } from "@/components/SiteShell";
@@ -45,7 +46,16 @@ export default async function CyberAiPage() {
               ) : null}
             </div>
           </div>
-          <aside className="panel ai-signal-panel">
+          <aside className="panel ai-preview-panel">
+            <div className="ai-preview-image">
+              <Image
+                src="/images/cyber-ai-workspace-hero.webp"
+                alt="Cyber AI workspace preview with conversations, memory context, and provider status"
+                width={1600}
+                height={1067}
+                priority
+              />
+            </div>
             <div className="ai-signal-row">
               <span>Provider chain</span>
               <strong>AgentRouter {"->"} OpenRouter {"->"} Groq {"->"} Local</strong>
