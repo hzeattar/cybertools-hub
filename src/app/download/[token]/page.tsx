@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { SiteShell } from "@/components/SiteShell";
 import { getOrder } from "@/lib/order-store";
 import { verifyDownloadToken } from "@/lib/payment";
 import { getProduct } from "@/data/catalog";
+import { getCurrentUser } from "@/lib/auth";
 
 type PageProps = {
   params: Promise<{ token: string }>;
@@ -15,12 +16,15 @@ export const metadata: Metadata = {
 };
 
 export default async function DownloadPage({ params }: PageProps) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login?next=/account");
   const { token } = await params;
   const payload = verifyDownloadToken(token);
   if (!payload) notFound();
   const order = await getOrder(payload.orderId);
   const product = getProduct(payload.productSlug);
   if (!order || order.status !== "paid" || !product) notFound();
+  if (order.userId !== user.id && user.role !== "admin") notFound();
 
   return (
     <SiteShell>

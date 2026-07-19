@@ -283,12 +283,131 @@ export async function hashText(input: string) {
   return `SHA-256: ${toHex(sha256)}\nSHA-512: ${toHex(sha512)}`;
 }
 
+export function analyzeOpenApiRisk(raw: string) {
+  const routes = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => /(^|\s)(get|post|put|patch|delete|head|options)\s+\/|^\/|"\//i.test(line));
+  if (!routes.length) return "Paste OpenAPI paths or method/path lines.";
+
+  const ranked = routes.map((route) => {
+    const risks: string[] = [];
+    if (/\/(users|accounts|customers|invoices|orders|payments|billing)/i.test(route)) risks.push("sensitive object");
+    if (/{[^}]*id[^}]*}|\/:id|\/\d+|uuid/i.test(route)) risks.push("IDOR candidate");
+    if (/admin|role|permission|invite|team/i.test(route)) risks.push("privilege boundary");
+    if (/export|download|csv|pdf|report|backup/i.test(route)) risks.push("bulk data exposure");
+    if (/webhook|callback|redirect|return_url/i.test(route)) risks.push("trust boundary");
+    if (/post|put|patch|delete/i.test(route)) risks.push("state change");
+    const score = risks.length;
+    return { route, score, risks: risks.length ? risks : ["baseline auth, validation, and logging"] };
+  });
+
+  return ranked
+    .sort((a, b) => b.score - a.score)
+    .map((item) => `[${item.score}] ${item.route}\n  Review: ${item.risks.join(", ")}`)
+    .join("\n\n");
+}
+
+export function reviewOauthOidcConfig(raw: string) {
+  const lower = raw.toLowerCase();
+  const notes: string[] = [];
+  if (/http:\/\//i.test(raw)) notes.push("Redirect URIs should use HTTPS except localhost development callbacks.");
+  if (/redirect_uri.*\*/i.test(raw) || /wildcard/i.test(raw)) notes.push("Wildcard redirect URIs are high risk.");
+  if (!/pkce|code_challenge/i.test(raw)) notes.push("Confirm PKCE is required for public clients.");
+  if (/implicit|response_type\s*[:=]\s*token/i.test(raw)) notes.push("Avoid implicit flow for modern browser/mobile apps.");
+  if (/offline_access|refresh/i.test(raw)) notes.push("Review refresh-token rotation, lifetime, and revocation.");
+  if (/openid/i.test(raw) && !/nonce/i.test(raw)) notes.push("Confirm nonce validation for OIDC flows.");
+  if (/client_secret/i.test(raw) && /spa|mobile|public/.test(lower)) notes.push("Public clients must not embed client secrets.");
+  if (!raw.trim()) return "Paste OAuth/OIDC provider notes, app settings, or flow parameters.";
+  return notes.length ? notes.map((note) => `- ${note}`).join("\n") : "No obvious OAuth/OIDC configuration warning found. Verify redirect allowlists, PKCE, scopes, and token lifetimes manually.";
+}
+
+export function redactSecretsAndPii(text: string) {
+  if (!text.trim()) return "Paste evidence text to redact.";
+  return redactEvidence(text)
+    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, "[ip-redacted]")
+    .replace(/\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g, "[aws-key-redacted]")
+    .replace(/\bsk-[A-Za-z0-9_-]{20,}\b/g, "sk-[redacted]")
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, "[jwt-redacted]")
+    .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[ssn-redacted]");
+}
+
+export function generateSecurityTxt(input: string) {
+  const lines = input
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const contact = lines.find((line) => /@|https?:\/\//.test(line)) ?? "mailto:security@example.com";
+  const policy = lines.find((line) => /policy|disclosure|bug|bounty/i.test(line)) ?? "https://example.com/security";
+  const expires = new Date(Date.now() + 180 * 24 * 60 * 60_000).toISOString().replace(/\.\d{3}Z$/, "Z");
+  return [
+    `Contact: ${contact.startsWith("http") || contact.startsWith("mailto:") ? contact : `mailto:${contact}`}`,
+    `Policy: ${policy}`,
+    "Preferred-Languages: en, ar",
+    `Expires: ${expires}`,
+    "Canonical: https://example.com/.well-known/security.txt",
+    "",
+    "# Replace example.com values before publishing.",
+  ].join("\n");
+}
+
+export function buildThreatModelMini(input: string) {
+  const text = input.trim();
+  if (!text) return "Describe a feature, API flow, or user journey.";
+  const assets = extractTerms(text, /(user|account|token|session|invoice|payment|file|admin|api|webhook|email|password)/gi);
+  const boundaries = extractTerms(text, /(browser|mobile|api|database|queue|third-party|provider|webhook|admin)/gi);
+  return [
+    "Mini threat model",
+    "",
+    `Feature: ${text.slice(0, 220)}`,
+    `Assets: ${assets.length ? assets.join(", ") : "users, data, sessions, service availability"}`,
+    `Trust boundaries: ${boundaries.length ? boundaries.join(", ") : "client to API, API to database, third-party integrations"}`,
+    "",
+    "Abuse cases:",
+    "- Broken object authorization across users or tenants.",
+    "- Replay or tampering of state-changing requests.",
+    "- Token leakage through logs, URLs, or third-party callbacks.",
+    "- Excessive privilege in admin or support workflows.",
+    "",
+    "Controls to verify:",
+    "- Server-side authorization per object and action.",
+    "- CSRF/replay defenses where browser credentials are used.",
+    "- Audit logs for sensitive changes.",
+    "- Rate limits and alerting for high-risk flows.",
+  ].join("\n");
+}
+
+export function compareSubdomainScope(subdomains: string, policy: string) {
+  const hosts = splitList(subdomains).map((host) => host.replace(/^https?:\/\//, "").replace(/\/.*$/, "").toLowerCase());
+  if (!hosts.length) return "Paste discovered subdomains in the first input.";
+  const policyLower = policy.toLowerCase();
+  return hosts
+    .map((host) => {
+      if (!policy.trim()) return `${host}: unclear - paste official scope policy before testing.`;
+      if (policyLower.includes(`out-of-scope: ${host}`) || policyLower.includes(`out of scope: ${host}`)) {
+        return `${host}: blocked - explicitly out of scope.`;
+      }
+      if (policyLower.includes(host)) return `${host}: likely in scope - confirm test type and limits.`;
+      const base = host.split(".").slice(-2).join(".");
+      if (policyLower.includes(`*.${base}`) || policyLower.includes(base)) {
+        return `${host}: candidate - wildcard/base domain appears in policy, verify exclusions.`;
+      }
+      return `${host}: unclear - treat as blocked until official scope confirms it.`;
+    })
+    .join("\n");
+}
+
 function safeDecode(input: string) {
   try {
     return decodeURIComponent(input);
   } catch {
     return "Input is not valid URL-encoded text.";
   }
+}
+
+function extractTerms(input: string, pattern: RegExp) {
+  return Array.from(new Set((input.match(pattern) ?? []).map((item) => item.toLowerCase()))).slice(0, 8);
 }
 
 function splitList(value: string) {

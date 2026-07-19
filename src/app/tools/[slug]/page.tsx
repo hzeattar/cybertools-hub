@@ -65,7 +65,7 @@ export default async function ToolPage({ params }: PageProps) {
           <ToolConsole slug={tool.slug} name={tool.name} />
         </div>
       </section>
-      <section className="section" style={{ background: "#eef4f8" }}>
+      <section className="section alt-band">
         <div className="container">
           <div className="grid grid-3">
             {tool.faq.map((item) => (

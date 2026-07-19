@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/tools",
     "/store",
+    "/assistant/cyber-ai",
     "/assistant/report-builder",
     "/assistant/scope-guard",
     "/legal/privacy",

@@ -4,7 +4,8 @@ export type ToolCategory =
   | "reporting"
   | "planning"
   | "encoding"
-  | "api";
+  | "api"
+  | "ai";
 
 export type Tool = {
   slug: string;
@@ -20,6 +21,7 @@ export type Tool = {
 export type Product = {
   slug: string;
   name: string;
+  kind: "product" | "ai_pro";
   priceUsdt: number;
   summary: string;
   audience: string;
@@ -316,12 +318,133 @@ export const tools: Tool[] = [
       },
     ],
   },
+  {
+    slug: "openapi-risk-analyzer",
+    name: "OpenAPI Risk Analyzer",
+    category: "api",
+    summary: "Paste OpenAPI paths and rank likely auth, object access, and data exposure review targets.",
+    description:
+      "Turn OpenAPI snippets or method/path lists into a prioritized API security review plan without calling the target service.",
+    keywords: ["openapi security analyzer", "api risk mapper", "api security testing"],
+    inputs: ["OpenAPI JSON/YAML or endpoint list"],
+    faq: [
+      {
+        question: "Does this scan an API?",
+        answer: "No. It only analyzes pasted route text and keeps planning inside authorized testing boundaries.",
+      },
+      {
+        question: "What risks does it flag?",
+        answer: "Object authorization, exports, admin verbs, webhooks, account state changes, and sensitive data paths.",
+      },
+    ],
+  },
+  {
+    slug: "oauth-oidc-config-reviewer",
+    name: "OAuth/OIDC Config Reviewer",
+    category: "identity",
+    summary: "Review OAuth and OIDC settings for redirect, token, scope, and client-type weaknesses.",
+    description:
+      "Paste provider notes or config snippets and get a cautious checklist for redirect URIs, PKCE, scopes, token lifetime, and client exposure.",
+    keywords: ["oauth security checklist", "oidc config reviewer", "pkce review"],
+    inputs: ["OAuth/OIDC configuration notes"],
+    faq: [
+      {
+        question: "Can this validate a live provider?",
+        answer: "No. It reviews text you paste and does not perform login or token requests.",
+      },
+      {
+        question: "Is this enough for a finding?",
+        answer: "No. Use the output as a review checklist and prove impact only within authorization.",
+      },
+    ],
+  },
+  {
+    slug: "secret-pii-redactor",
+    name: "Secret and PII Redactor",
+    category: "reporting",
+    summary: "Mask tokens, keys, emails, IPs, and common identifiers before sharing evidence.",
+    description:
+      "Clean report evidence quickly by masking common secrets and personal data patterns while preserving enough context for triage.",
+    keywords: ["secret redactor", "pii redaction", "bug bounty evidence"],
+    inputs: ["Evidence text"],
+    faq: [
+      {
+        question: "Does this replace careful review?",
+        answer: "No. It catches common patterns, but you should manually review sensitive evidence before submission.",
+      },
+      {
+        question: "Is pasted evidence stored?",
+        answer: "No. Redaction runs in the browser as a free tool.",
+      },
+    ],
+  },
+  {
+    slug: "security-txt-generator",
+    name: "Security.txt Generator",
+    category: "reporting",
+    summary: "Generate a clean security.txt draft for vulnerability disclosure programs.",
+    description:
+      "Create a security.txt file with contact, policy, acknowledgments, preferred languages, and expiry fields.",
+    keywords: ["security.txt generator", "vulnerability disclosure", "security contact"],
+    inputs: ["Disclosure contact details"],
+    faq: [
+      {
+        question: "Where should security.txt live?",
+        answer: "Usually at /.well-known/security.txt and optionally /security.txt.",
+      },
+      {
+        question: "Does it submit anything?",
+        answer: "No. It only generates text you can deploy yourself.",
+      },
+    ],
+  },
+  {
+    slug: "threat-model-mini-builder",
+    name: "Threat Model Mini Builder",
+    category: "planning",
+    summary: "Convert a feature description into assets, trust boundaries, abuse cases, and controls.",
+    description:
+      "Draft a compact threat model for a feature, API flow, or user journey before implementation or testing.",
+    keywords: ["threat model builder", "stride checklist", "security design review"],
+    inputs: ["Feature or flow description"],
+    faq: [
+      {
+        question: "Is this a full threat model?",
+        answer: "No. It creates a practical starter model for focused review and follow-up discussion.",
+      },
+      {
+        question: "Can bug bounty researchers use it?",
+        answer: "Yes, when planning authorized testing from documented features and program scope.",
+      },
+    ],
+  },
+  {
+    slug: "subdomain-scope-comparator",
+    name: "Subdomain Scope Comparator",
+    category: "planning",
+    summary: "Compare discovered subdomains against in-scope and out-of-scope policy notes.",
+    description:
+      "Paste discovered hosts and program scope notes to separate likely in-scope candidates from blocked or unclear assets.",
+    keywords: ["bug bounty scope checker", "subdomain scope", "program policy"],
+    inputs: ["Subdomains", "scope policy"],
+    faq: [
+      {
+        question: "Does this authorize testing?",
+        answer: "No. It highlights candidates and marks unclear entries as blocked until official policy confirms them.",
+      },
+      {
+        question: "Does it discover subdomains?",
+        answer: "No. It only compares text you provide.",
+      },
+    ],
+  },
 ];
 
 export const products: Product[] = [
   {
     slug: "bug-bounty-starter-kit",
     name: "Bug Bounty Starter Kit",
+    kind: "product",
     priceUsdt: 9.99,
     summary: "A compact starter pack for choosing programs, reading scope, and writing first reports.",
     audience: "New security researchers who want clean process without noisy testing.",
@@ -336,6 +459,7 @@ export const products: Product[] = [
   {
     slug: "api-security-checklist-pack",
     name: "API Security Checklist Pack",
+    kind: "product",
     priceUsdt: 14.99,
     summary: "API review worksheets for object authorization, exports, webhooks, and account flows.",
     audience: "Researchers and small teams reviewing APIs with limited time.",
@@ -350,6 +474,7 @@ export const products: Product[] = [
   {
     slug: "professional-vulnerability-report-templates",
     name: "Professional Vulnerability Report Templates",
+    kind: "product",
     priceUsdt: 19.99,
     summary: "High-signal report templates for access control, auth, CORS, headers, and business logic.",
     audience: "Researchers who want reports that triage teams can reproduce quickly.",
@@ -364,6 +489,7 @@ export const products: Product[] = [
   {
     slug: "full-security-research-bundle",
     name: "Full Security Research Bundle",
+    kind: "product",
     priceUsdt: 29.99,
     summary: "Every V1 digital product bundled with upgrade notes and launch checklists.",
     audience: "Researchers building a repeatable bug bounty workflow.",
@@ -374,6 +500,21 @@ export const products: Product[] = [
       "Recon notes and program tracker",
     ],
     seo: "Complete bug bounty research bundle with security checklists, report templates, and trackers.",
+  },
+  {
+    slug: "ai-pro-pass-30-days",
+    name: "AI Pro Pass - 30 Days",
+    kind: "ai_pro",
+    priceUsdt: 19.99,
+    summary: "Unlock higher daily limits and larger context for Cyber AI Analyst for 30 days.",
+    audience: "Security researchers who want deeper AI-assisted review without exposing prompts publicly.",
+    deliverables: [
+      "100 Cyber AI requests per day",
+      "Larger prompt context",
+      "Defensive security analysis mode",
+      "30-day entitlement after verified USDT TRC20 payment",
+    ],
+    seo: "Cyber security AI assistant pro pass with higher daily limits for authorized security research.",
   },
 ];
 

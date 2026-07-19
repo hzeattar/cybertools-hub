@@ -15,10 +15,10 @@ export default function StorePage() {
         <div className="container">
           <p className="eyebrow">USDT TRC20 store</p>
           <h1 className="hero-title" style={{ fontSize: 48 }}>
-            Downloadable security research products.
+            Security research products and AI Pro access.
           </h1>
           <p className="hero-copy">
-            Products are delivered with signed download tokens after checkout detects the matching USDT TRC20 transfer.
+            Digital products get signed downloads. AI Pro Pass unlocks higher Cyber AI limits for 30 days after payment.
           </p>
           <div className="grid grid-4" style={{ marginTop: 24 }}>
             {products.map((product) => (
@@ -27,7 +27,7 @@ export default function StorePage() {
                 <h3>{product.name}</h3>
                 <p className="muted">{product.summary}</p>
                 <div className="tag-row">
-                  <span className="tag teal">instant delivery</span>
+                  <span className="tag teal">{product.kind === "ai_pro" ? "30-day pass" : "instant delivery"}</span>
                   <span className="tag">TRC20</span>
                 </div>
               </Link>

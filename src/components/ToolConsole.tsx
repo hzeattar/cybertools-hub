@@ -6,16 +6,22 @@ import {
   analyzeCors,
   analyzeCsp,
   analyzeSecurityHeaders,
+  analyzeOpenApiRisk,
   buildIdorMatrix,
   buildRateLimitPlan,
   buildReport,
   buildScopeChecklist,
+  buildThreatModelMini,
   calculateCvssLike,
+  compareSubdomainScope,
   encodeBundle,
   formatAndDiffJson,
+  generateSecurityTxt,
   hashText,
   mapEndpointRisks,
   parseJwt,
+  redactSecretsAndPii,
+  reviewOauthOidcConfig,
 } from "@/lib/tooling";
 
 const samples: Record<string, string> = {
@@ -28,6 +34,14 @@ const samples: Record<string, string> = {
   "scope-checklist-generator":
     "https://app.example.com is in scope\napi.example.com is in scope\nDo not test denial of service\nOut-of-scope: third-party payment provider",
   "api-endpoint-risk-mapper": "GET /api/users/{id}\nPOST /api/admin/invites\nGET /api/invoices/{id}/download",
+  "openapi-risk-analyzer": "GET /api/users/{id}\nPOST /api/admin/invites\nGET /api/invoices/{id}/download\nPOST /api/webhooks/stripe",
+  "oauth-oidc-config-reviewer":
+    "response_type=code\nredirect_uri=https://app.example.com/callback\nscope=openid profile email offline_access\npublic client: SPA",
+  "secret-pii-redactor":
+    "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.secret\nemail: researcher@example.com\napi_key=sk-example123456789000000",
+  "security-txt-generator": "security@example.com\nhttps://example.com/security-policy",
+  "threat-model-mini-builder": "A team invite API lets admins invite users by email and assign roles.",
+  "subdomain-scope-comparator": "app.example.com\nadmin.example.com\nold.example.net",
 };
 
 type Props = {
@@ -81,6 +95,18 @@ export function ToolConsole({ slug, name }: Props) {
         return formatAndDiffJson(primary || "{\"role\":\"user\"}", secondary);
       case "hash-generator":
         return hashOutput || "Type text, then run hash.";
+      case "openapi-risk-analyzer":
+        return analyzeOpenApiRisk(primary);
+      case "oauth-oidc-config-reviewer":
+        return reviewOauthOidcConfig(primary);
+      case "secret-pii-redactor":
+        return redactSecretsAndPii(primary);
+      case "security-txt-generator":
+        return generateSecurityTxt(primary);
+      case "threat-model-mini-builder":
+        return buildThreatModelMini(primary);
+      case "subdomain-scope-comparator":
+        return compareSubdomainScope(primary, secondary);
       default:
         return "This tool is being prepared.";
     }
@@ -181,6 +207,12 @@ function primaryLabel(slug: string) {
   if (slug === "idor-matrix-builder") return "Roles";
   if (slug === "rate-limit-test-planner") return "Flow name";
   if (slug === "json-formatter-diff") return "JSON A";
+  if (slug === "openapi-risk-analyzer") return "OpenAPI paths or endpoint list";
+  if (slug === "oauth-oidc-config-reviewer") return "OAuth/OIDC notes";
+  if (slug === "secret-pii-redactor") return "Evidence text";
+  if (slug === "security-txt-generator") return "Contact and policy details";
+  if (slug === "threat-model-mini-builder") return "Feature or flow description";
+  if (slug === "subdomain-scope-comparator") return "Discovered subdomains";
   return "Input";
 }
 
@@ -189,9 +221,16 @@ function secondaryLabel(slug: string) {
   if (slug === "idor-matrix-builder") return "Resources";
   if (slug === "rate-limit-test-planner") return "Program constraints";
   if (slug === "json-formatter-diff") return "JSON B";
+  if (slug === "subdomain-scope-comparator") return "Official scope policy";
   return "Secondary input";
 }
 
 function needsSecondary(slug: string) {
-  return ["bug-bounty-report-formatter", "idor-matrix-builder", "rate-limit-test-planner", "json-formatter-diff"].includes(slug);
+  return [
+    "bug-bounty-report-formatter",
+    "idor-matrix-builder",
+    "rate-limit-test-planner",
+    "json-formatter-diff",
+    "subdomain-scope-comparator",
+  ].includes(slug);
 }

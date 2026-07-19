@@ -6,11 +6,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cybertools-hub.com"
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "CyberTools Hub - Free Security Tools and Bug Bounty Kits",
+    default: "CyberTools Hub - Cyber AI and Security Research Tools",
     template: "%s | CyberTools Hub",
   },
   description:
-    "A focused toolkit for authorized security testing, bug bounty reporting, and downloadable security research templates with USDT TRC20 checkout.",
+    "A dark security research workspace with free cyber tools, Cyber AI Analyst, account-based USDT TRC20 checkout, and downloadable bug bounty kits.",
   applicationName: "CyberTools Hub",
   keywords: [
     "bug bounty tools",
@@ -18,13 +18,15 @@ export const metadata: Metadata = {
     "JWT decoder",
     "CSP analyzer",
     "CVSS calculator",
+    "cyber security AI assistant",
+    "OpenAPI security analyzer",
     "USDT security templates",
   ],
   authors: [{ name: "CyberTools Hub" }],
   openGraph: {
     title: "CyberTools Hub",
     description:
-      "Free browser-first security tools plus paid bug bounty templates delivered after verified USDT TRC20 payment.",
+      "Free security tools, defensive Cyber AI, and paid bug bounty templates delivered after verified USDT TRC20 payment.",
     url: siteUrl,
     siteName: "CyberTools Hub",
     type: "website",
@@ -33,7 +35,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CyberTools Hub",
     description:
-      "Security tools, report builders, and bug bounty digital kits in one focused workspace.",
+      "Security tools, Cyber AI, report builders, and bug bounty digital kits in one focused workspace.",
   },
   robots: {
     index: true,

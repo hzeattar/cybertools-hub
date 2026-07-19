@@ -3,12 +3,16 @@ import { getOrder, isTransactionUsed, markOrderExpired, markOrderPaid } from "@/
 import { hashToken, isExpired, issueDownloadToken } from "@/lib/payment";
 import { fetchRecentUsdtTransfers, findMatchingTransfer } from "@/lib/tronscan";
 import { rateLimit } from "@/lib/rate-limit";
+import { getCurrentUser } from "@/lib/auth";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
 export async function POST(request: NextRequest, context: RouteContext) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Login required." }, { status: 401 });
+
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "local";
   const limit = rateLimit(`verify:${ip}`, 20, 60_000);
   if (!limit.ok) {
@@ -20,9 +24,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
   if (!order) {
     return NextResponse.json({ error: "Order not found." }, { status: 404 });
   }
+  if (order.userId !== user.id && user.role !== "admin") {
+    return NextResponse.json({ error: "Order not found." }, { status: 404 });
+  }
 
   if (order.status === "paid") {
-    const token = issueDownloadToken(order);
+    const token = order.kind === "product" ? issueDownloadToken(order) : undefined;
     return NextResponse.json({ order, downloadToken: token, message: "Payment already verified." });
   }
 
@@ -32,9 +39,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   if (process.env.NODE_ENV !== "production" && request.nextUrl.searchParams.get("mock") === "paid") {
-    const token = issueDownloadToken(order);
-    const paid = await markOrderPaid(order, `mock-${order.id}`, hashToken(token));
-    return NextResponse.json({ order: paid, downloadToken: token, message: "Mock payment verified." });
+    const token = order.kind === "product" ? issueDownloadToken(order) : "";
+    const paid = await markOrderPaid(order, `mock-${order.id}`, token ? hashToken(token) : "");
+    return NextResponse.json({ order: paid, downloadToken: token || undefined, message: "Mock payment verified." });
   }
 
   if (!process.env.TRONSCAN_API_KEY) {
@@ -60,9 +67,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ order, message: "Matching transaction was already used by another order." });
     }
 
-    const token = issueDownloadToken(order);
-    const paid = await markOrderPaid(order, match.txHash, hashToken(token));
-    return NextResponse.json({ order: paid, downloadToken: token, message: "Payment verified." });
+    const token = order.kind === "product" ? issueDownloadToken(order) : "";
+    const paid = await markOrderPaid(order, match.txHash, token ? hashToken(token) : "");
+    return NextResponse.json({ order: paid, downloadToken: token || undefined, message: "Payment verified." });
   } catch (error) {
     return NextResponse.json(
       {

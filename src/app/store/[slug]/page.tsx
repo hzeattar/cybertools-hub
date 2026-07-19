@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getProduct, products } from "@/data/catalog";
 import { SiteShell } from "@/components/SiteShell";
 import { StoreClient } from "@/components/StoreClient";
+import { getCurrentUser } from "@/lib/auth";
+import { hasActiveEntitlement } from "@/lib/order-store";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -27,6 +29,8 @@ export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) notFound();
+  const user = await getCurrentUser();
+  const owned = user ? await hasActiveEntitlement(user.id, product.kind, product.kind === "product" ? product.slug : undefined) : false;
 
   const schema = {
     "@context": "https://schema.org",
@@ -46,7 +50,7 @@ export default async function ProductPage({ params }: PageProps) {
       <section className="section">
         <div className="container checkout-grid">
           <div>
-            <p className="eyebrow">Digital download</p>
+            <p className="eyebrow">{product.kind === "ai_pro" ? "AI subscription pass" : "Digital download"}</p>
             <h1 className="hero-title" style={{ fontSize: 48 }}>
               {product.name}
             </h1>
@@ -54,7 +58,7 @@ export default async function ProductPage({ params }: PageProps) {
             <div className="price" style={{ marginTop: 18 }}>
               {product.priceUsdt.toFixed(2)} USDT
             </div>
-            <StoreClient productSlug={product.slug} />
+            <StoreClient productSlug={product.slug} signedIn={Boolean(user)} owned={owned} />
           </div>
           <aside className="panel">
             <h2 style={{ fontSize: 24, fontWeight: 800 }}>What is included</h2>
@@ -66,7 +70,8 @@ export default async function ProductPage({ params }: PageProps) {
               ))}
             </ul>
             <p className="muted" style={{ marginTop: 14 }}>
-              Built for authorized testing, repeatable evidence collection, and concise reports.
+              Built for authorized testing, repeatable evidence collection, concise reports, and defensive AI-assisted
+              review.
             </p>
           </aside>
         </div>

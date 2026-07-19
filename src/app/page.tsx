@@ -9,10 +9,10 @@ export default function Home() {
         <div className="container hero-grid">
           <div>
             <p className="eyebrow">Authorized security research workspace</p>
-            <h1 className="hero-title">Free security tools with USDT-ready digital kits.</h1>
+            <h1 className="hero-title">Security tools, Cyber AI, and USDT-ready research kits.</h1>
             <p className="hero-copy">
-              Decode tokens, analyze browser security controls, plan bug bounty scope safely, and buy report templates
-              through a TRON USDT checkout that verifies payments server-side.
+              Decode tokens, analyze browser security controls, plan scope safely, ask a defensive Cyber AI analyst, and
+              buy report templates through a TRON USDT checkout that verifies payments server-side.
             </p>
             <div className="metric-strip" aria-label="Platform metrics">
               <div className="metric">
@@ -32,12 +32,19 @@ export default function Home() {
               <Link className="btn primary" href="/tools">
                 Open tools
               </Link>
+              <Link className="btn secondary" href="/assistant/cyber-ai">
+                Cyber AI
+              </Link>
               <Link className="btn secondary" href="/store">
                 View store
               </Link>
             </div>
           </div>
           <div className="terminal-panel" aria-label="Live workflow preview">
+            <div className="terminal-row">
+              <strong>Cyber AI Analyst</strong>
+              <span>defensive review</span>
+            </div>
             <div className="terminal-row">
               <strong>Scope Guard</strong>
               <span>policy to checklist</span>
@@ -88,7 +95,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section" style={{ background: "#eef4f8" }}>
+      <section className="section alt-band">
         <div className="container">
           <div className="section-header">
             <div>

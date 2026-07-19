@@ -1,9 +1,12 @@
 import crypto from "node:crypto";
 
 export type OrderStatus = "pending" | "paid" | "expired";
+export type OrderKind = "product" | "ai_pro";
 
 export type Order = {
   id: string;
+  userId?: string;
+  kind: OrderKind;
   productSlug: string;
   productName: string;
   basePriceUsdt: number;
@@ -61,12 +64,18 @@ export function expectedPaymentUnits(basePriceUsdt: number, orderId: string, sec
   return parseUsdtToUnits(basePriceUsdt) + uniqueOffsetUnits(orderId, secret);
 }
 
-export function createPendingOrder(product: { slug: string; name: string; priceUsdt: number }, now = new Date()) {
+export function createPendingOrder(
+  product: { slug: string; name: string; priceUsdt: number; kind?: OrderKind },
+  userId?: string,
+  now = new Date(),
+) {
   const id = generateOrderId();
   const expectedAmountUnits = expectedPaymentUnits(product.priceUsdt, id);
   const expiresAt = new Date(now.getTime() + PAYMENT_WINDOW_MINUTES * 60_000);
   return {
     id,
+    userId,
+    kind: product.kind ?? "product",
     productSlug: product.slug,
     productName: product.name,
     basePriceUsdt: product.priceUsdt,
@@ -102,6 +111,7 @@ export function verifyDownloadToken(token: string) {
   const [payload, signature] = token.split(".");
   if (!payload || !signature) return null;
   const expected = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+  if (Buffer.byteLength(signature) !== Buffer.byteLength(expected)) return null;
   if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return null;
   const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
     orderId: string;

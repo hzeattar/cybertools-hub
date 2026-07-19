@@ -3,18 +3,24 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import QRCode from "qrcode";
 import type { Order } from "@/lib/payment";
 
 export function CheckoutClient({ initialOrder }: { initialOrder: Order }) {
   const [order, setOrder] = useState(initialOrder);
   const [downloadToken, setDownloadToken] = useState<string | null>(null);
   const [message, setMessage] = useState("Waiting for a matching USDT TRC20 transfer.");
+  const [qrUrl, setQrUrl] = useState("");
 
   const paymentText = useMemo(
     () => `USDT TRC20\nAddress: ${order.receiverAddress}\nAmount: ${order.expectedAmount}\nOrder: ${order.id}`,
     [order],
   );
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(paymentText)}`;
+  useEffect(() => {
+    QRCode.toDataURL(paymentText, { width: 220, margin: 1, color: { dark: "#06130f", light: "#f8fffb" } })
+      .then(setQrUrl)
+      .catch(() => setQrUrl(""));
+  }, [paymentText]);
 
   async function verify() {
     const response = await fetch(`/api/orders/${order.id}/verify`, { method: "POST" });
@@ -84,7 +90,11 @@ export function CheckoutClient({ initialOrder }: { initialOrder: Order }) {
         ) : null}
       </section>
       <aside className="qr-box">
-        <Image src={qrUrl} alt="USDT TRC20 payment QR code" width={220} height={220} unoptimized />
+        {qrUrl ? (
+          <Image src={qrUrl} alt="USDT TRC20 payment QR code" width={220} height={220} unoptimized />
+        ) : (
+          <div className="qr-placeholder">QR</div>
+        )}
         <p className="mono" style={{ marginTop: 12, textAlign: "center" }}>
           {order.productName}
         </p>

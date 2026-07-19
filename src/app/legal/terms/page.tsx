@@ -24,8 +24,17 @@ export default function TermsPage() {
               platform does not grant permission to test any third-party system.
             </p>
             <p>
+              Cyber AI Analyst is limited to defensive security, authorized testing, report writing, code/config review,
+              and safe planning. Requests for malware, phishing, credential theft, persistence, or unauthorized
+              exploitation are not allowed.
+            </p>
+            <p>
               Digital products are delivered after payment verification. Crypto payments are irreversible, so always
               confirm network, token, address, and exact amount before sending.
+            </p>
+            <p>
+              AI Pro Pass is a 30-day access entitlement after verified payment. It is not an automatic recurring
+              subscription because USDT TRC20 wallet payments do not support recurring debits from the user wallet.
             </p>
           </div>
         </div>
