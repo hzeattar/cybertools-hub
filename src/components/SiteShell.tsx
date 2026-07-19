@@ -12,10 +12,12 @@ const navItems = [
 export async function SiteShell({
   children,
   hideFooter = false,
+  hideSupport = false,
   wide = false,
 }: {
   children: React.ReactNode;
   hideFooter?: boolean;
+  hideSupport?: boolean;
   wide?: boolean;
 }) {
   const user = await getCurrentUser();
@@ -60,10 +62,12 @@ export async function SiteShell({
         </div>
       </header>
       <main id="main">{children}</main>
-      <Link className="support-float" href="/contact" aria-label="Talk to support">
-        <LifeBuoy size={17} />
-        <span>Talk to support</span>
-      </Link>
+      {!hideSupport ? (
+        <Link className="support-float" href="/contact" aria-label="Talk to support">
+          <LifeBuoy size={17} />
+          <span>Talk to support</span>
+        </Link>
+      ) : null}
       {!hideFooter ? (
         <footer className="footer">
           <div className="container footer-grid">

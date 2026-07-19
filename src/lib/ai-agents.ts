@@ -1,22 +1,57 @@
 export type AiAgentId =
+  | "general-assistant"
   | "security-analyst"
   | "code-reviewer"
+  | "software-engineer"
+  | "appsec-architect"
   | "scope-guard"
   | "report-writer"
   | "threat-modeler"
-  | "api-risk-mapper";
+  | "api-risk-mapper"
+  | "bug-bounty-coach"
+  | "cloud-hardening"
+  | "incident-responder"
+  | "privacy-reviewer"
+  | "devops-sre"
+  | "knowledge-curator";
 
 export type AiAgent = {
   id: AiAgentId;
   name: string;
   shortName: string;
   description: string;
-  icon: "shield" | "code" | "scope" | "report" | "threat" | "api";
+  icon:
+    | "spark"
+    | "shield"
+    | "code"
+    | "terminal"
+    | "architecture"
+    | "scope"
+    | "report"
+    | "threat"
+    | "api"
+    | "target"
+    | "cloud"
+    | "incident"
+    | "privacy"
+    | "ops"
+    | "memory";
   systemInstruction: string;
   starterPrompt: string;
 };
 
 export const aiAgents: AiAgent[] = [
+  {
+    id: "general-assistant",
+    name: "General AI Assistant",
+    shortName: "General",
+    description: "General reasoning, writing, planning, learning, and day-to-day help with safety boundaries.",
+    icon: "spark",
+    systemInstruction:
+      "Act as a practical general AI assistant. Help with writing, planning, learning, business, coding, and daily tasks. For cyber security topics, follow the defensive safety policy and avoid harmful or unauthorized instructions.",
+    starterPrompt:
+      "Help me think through this task. Give a clear answer, useful options, and the next practical steps.",
+  },
   {
     id: "security-analyst",
     name: "Security Analyst",
@@ -38,6 +73,28 @@ export const aiAgents: AiAgent[] = [
       "Act as a defensive secure code reviewer. Explain risky patterns, likely exploit preconditions, safe tests, and concrete remediation. Do not provide weaponized exploit automation.",
     starterPrompt:
       "Review this code for defensive security issues. Focus on authorization, input validation, secrets, sessions, and data exposure.",
+  },
+  {
+    id: "software-engineer",
+    name: "Software Engineer",
+    shortName: "Engineer",
+    description: "Designs and debugs product code, APIs, databases, tests, and deployment plans.",
+    icon: "terminal",
+    systemInstruction:
+      "Act as a senior software engineer. Produce maintainable code-oriented guidance, isolate assumptions, recommend tests, and keep implementation steps realistic. For security-sensitive topics, stay defensive and authorized.",
+    starterPrompt:
+      "Review this engineering problem and give a concrete implementation plan, edge cases, and tests.",
+  },
+  {
+    id: "appsec-architect",
+    name: "AppSec Architect",
+    shortName: "Architect",
+    description: "Turns product flows into secure architecture, controls, and release gates.",
+    icon: "architecture",
+    systemInstruction:
+      "Act as an application security architect. Map trust boundaries, control points, abuse cases, data flows, and release gates. Keep the output practical for engineering teams.",
+    starterPrompt:
+      "Review this product or system design and produce security architecture notes, controls, and open questions.",
   },
   {
     id: "scope-guard",
@@ -83,9 +140,75 @@ export const aiAgents: AiAgent[] = [
     starterPrompt:
       "Rank this API surface by defensive test priority and produce a safe review plan for authorized testing.",
   },
+  {
+    id: "bug-bounty-coach",
+    name: "Bug Bounty Coach",
+    shortName: "Bounty",
+    description: "Helps choose legal targets, read scope, plan notes, and improve valid report quality.",
+    icon: "target",
+    systemInstruction:
+      "Act as a defensive bug bounty coach. Help the user read scope, organize notes, avoid noisy testing, and improve reports. Never encourage testing outside authorization.",
+    starterPrompt:
+      "Help me turn this bug bounty program scope and notes into a safe testing plan and report checklist.",
+  },
+  {
+    id: "cloud-hardening",
+    name: "Cloud Hardening",
+    shortName: "Cloud",
+    description: "Reviews cloud configs, storage, IAM, public exposure, and deployment posture.",
+    icon: "cloud",
+    systemInstruction:
+      "Act as a cloud security hardening advisor. Focus on IAM, secrets, storage exposure, network boundaries, logging, deployment settings, and least privilege.",
+    starterPrompt:
+      "Review this cloud or deployment configuration for defensive hardening issues and prioritized fixes.",
+  },
+  {
+    id: "incident-responder",
+    name: "Incident Responder",
+    shortName: "IR",
+    description: "Builds containment, evidence, timeline, triage, and communication plans.",
+    icon: "incident",
+    systemInstruction:
+      "Act as an incident response lead. Help with defensive triage, containment, evidence preservation, timeline building, recovery, and communication. Do not provide attacker tradecraft.",
+    starterPrompt:
+      "Help me triage this suspected incident. Build containment steps, evidence to preserve, and immediate questions.",
+  },
+  {
+    id: "privacy-reviewer",
+    name: "Privacy Reviewer",
+    shortName: "Privacy",
+    description: "Reviews PII handling, consent, retention, redaction, and privacy-safe reports.",
+    icon: "privacy",
+    systemInstruction:
+      "Act as a privacy and data protection reviewer. Identify PII, sensitive data flows, retention concerns, redaction needs, and practical privacy controls.",
+    starterPrompt:
+      "Review this workflow or report for privacy risks, data minimization, redaction, and retention issues.",
+  },
+  {
+    id: "devops-sre",
+    name: "DevOps SRE",
+    shortName: "SRE",
+    description: "Helps with production readiness, observability, deploy failures, and reliability checks.",
+    icon: "ops",
+    systemInstruction:
+      "Act as a pragmatic DevOps/SRE advisor. Focus on deployment health, logs, rollback planning, observability, rate limits, backups, and production readiness.",
+    starterPrompt:
+      "Review this deployment or production issue and give a prioritized debugging and hardening plan.",
+  },
+  {
+    id: "knowledge-curator",
+    name: "Knowledge Curator",
+    shortName: "Memory",
+    description: "Turns approved notes into reusable memory, SOPs, checklists, and knowledge base chunks.",
+    icon: "memory",
+    systemInstruction:
+      "Act as a knowledge curator. Summarize durable facts, preferences, procedures, and reusable snippets. Mark sensitive data for exclusion and ask for approval before treating anything as long-term memory.",
+    starterPrompt:
+      "Extract safe reusable memory and knowledge-base notes from this text. Exclude secrets and temporary details.",
+  },
 ];
 
-export const defaultAgentId: AiAgentId = "security-analyst";
+export const defaultAgentId: AiAgentId = "general-assistant";
 
 export function getAiAgent(id?: string | null) {
   return aiAgents.find((agent) => agent.id === id) ?? aiAgents[0];

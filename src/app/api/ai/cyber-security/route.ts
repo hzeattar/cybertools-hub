@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callCyberAi, getAiLimit, maxPromptLength, type CyberAiPlan } from "@/lib/agentrouter";
+import {
+  callCyberAi,
+  getAiLimit,
+  maxPromptLength,
+  type CyberAiPlan,
+  type CyberAiProviderPreference,
+} from "@/lib/agentrouter";
 import { reserveAiUsage } from "@/lib/ai-usage-store";
 import { getCurrentUser } from "@/lib/auth";
 import { hasActiveEntitlement } from "@/lib/order-store";
@@ -13,7 +19,9 @@ export async function POST(request: NextRequest) {
   const ipLimit = rateLimit(`ai:${ip}`, 60, 60_000);
   if (!ipLimit.ok) return NextResponse.json({ error: "Too many AI requests." }, { status: 429 });
 
-  const body = (await request.json().catch(() => null)) as { message?: string } | null;
+  const body = (await request.json().catch(() => null)) as
+    | { message?: string; providerPreference?: CyberAiProviderPreference }
+    | null;
   const rawMessage = body?.message?.trim() ?? "";
   if (rawMessage.length < 8) {
     return NextResponse.json({ error: "Describe what you want the Cyber AI Analyst to review." }, { status: 400 });
@@ -28,13 +36,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const message = rawMessage.slice(0, maxPromptLength(plan));
-    const result = await callCyberAi({ message, plan });
+    const result = await callCyberAi({ message, plan, providerPreference: body?.providerPreference });
     return NextResponse.json({
       answer: result.answer,
       refused: result.refused,
       provider: result.provider,
       providerLabel: result.providerLabel,
       fallback: result.fallback,
+      attempts: result.attempts,
       plan,
       usage: reservation,
     });

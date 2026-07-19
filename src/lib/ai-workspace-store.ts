@@ -165,6 +165,31 @@ const seededKnowledge = [
       },
     ],
   },
+  {
+    source: {
+      id: "src-product-engineering",
+      slug: "product-engineering",
+      title: "Product Engineering",
+      summary: "Practical engineering guidance for building production SaaS features.",
+      createdAt: seedDate,
+    },
+    chunks: [
+      {
+        id: "chunk-production-readiness",
+        title: "Production readiness",
+        content:
+          "Before shipping a production feature, verify authentication, authorization, error handling, rate limits, observability, backups, health checks, build scripts, environment variables, and a browser smoke test.",
+        keywords: ["production", "deploy", "railway", "health", "testing", "observability"],
+      },
+      {
+        id: "chunk-ai-memory-rules",
+        title: "Memory rules",
+        content:
+          "Durable memory should be explicit, useful later, non-secret, and user-approved. Avoid storing passwords, tokens, private keys, temporary debugging details, or sensitive personal data.",
+        keywords: ["memory", "remember", "preference", "privacy", "secret"],
+      },
+    ],
+  },
 ];
 
 let memoryStore: StoreShape | null = null;
@@ -409,10 +434,13 @@ export function suggestMemoryFromMessage(message: string) {
   if (compact.length < 24 || compact.length > 260) return null;
   if (/(password|private key|secret|bearer|api[_ -]?key|sk-[a-z0-9]|mnemonic|seed phrase)/i.test(compact)) return null;
   const patterns = [
-    { pattern: /\b(remember|save this|keep in mind)\b/i, reason: "The user explicitly asked to remember this." },
+    { pattern: /\b(remember|save this|keep in mind)\b|(?:احفظ|افتكر|خليك فاكر)/i, reason: "The user explicitly asked to remember this." },
     { pattern: /\b(my|our)\s+(project|app|site|platform|domain|stack|workflow)\b/i, reason: "This looks like stable project context." },
-    { pattern: /\b(i prefer|we prefer|default to|always use|avoid)\b/i, reason: "This looks like a reusable working preference." },
-    { pattern: /\b(scope|program rules|authorized assets|out of scope)\b/i, reason: "This may be reusable authorization context." },
+    {
+      pattern: /\b(i prefer|we prefer|default to|always use|avoid|my goal|our goal|i want)\b|(?:أفضل|عايز|هدفنا|دايمًا|تجنب)/i,
+      reason: "This looks like a reusable working preference.",
+    },
+    { pattern: /\b(scope|program rules|authorized assets|out of scope)\b|(?:النطاق|مصرح|خارج النطاق)/i, reason: "This may be reusable authorization context." },
   ];
   const match = patterns.find((item) => item.pattern.test(compact));
   if (!match) return null;

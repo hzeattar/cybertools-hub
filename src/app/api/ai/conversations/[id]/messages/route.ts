@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callCyberAi, getAiLimit, maxPromptLength, type CyberAiPlan } from "@/lib/agentrouter";
+import {
+  callCyberAi,
+  getAiLimit,
+  maxPromptLength,
+  type CyberAiPlan,
+  type CyberAiProviderPreference,
+} from "@/lib/agentrouter";
 import { getAiAgent } from "@/lib/ai-agents";
 import { reserveAiUsage } from "@/lib/ai-usage-store";
 import { getCurrentUser } from "@/lib/auth";
@@ -42,7 +48,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const conversation = await getConversationForUser(user.id, id);
   if (!conversation) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
 
-  const body = (await request.json().catch(() => null)) as { message?: string; agentId?: string } | null;
+  const body = (await request.json().catch(() => null)) as
+    | { message?: string; agentId?: string; providerPreference?: CyberAiProviderPreference }
+    | null;
   const rawMessage = body?.message?.trim() ?? "";
   if (rawMessage.length < 8) {
     return NextResponse.json({ error: "Describe what you want the AI workspace to review." }, { status: 400 });
@@ -57,6 +65,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   const message = rawMessage.slice(0, maxPromptLength(plan));
+  const previousMessages =
+    (await listMessagesForConversation(user.id, conversation.id))?.map((item) => ({
+      role: item.role,
+      content: item.content,
+    })) ?? [];
   const userMessage = await appendMessage({
     userId: user.id,
     conversationId: conversation.id,
@@ -71,6 +84,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     plan,
     agentInstruction: agent.systemInstruction,
     context: contextBlock,
+    providerPreference: body?.providerPreference,
+    conversationHistory: previousMessages,
   });
 
   const assistantMessage = await appendMessage({
@@ -109,6 +124,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     provider: result.provider,
     providerLabel: result.providerLabel,
     fallback: result.fallback,
+    attempts: result.attempts,
     plan,
     usage: reservation,
   });

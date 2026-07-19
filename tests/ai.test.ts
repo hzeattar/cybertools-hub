@@ -44,6 +44,20 @@ test("provider order accepts comma or whitespace separators", () => {
   }
 });
 
+test("default provider order includes free cloud before offline local", () => {
+  const previous = process.env.AI_PROVIDER_ORDER;
+  try {
+    delete process.env.AI_PROVIDER_ORDER;
+    const order = getProviderOrder();
+    assert.equal(order.includes("pollinations"), true);
+    assert.equal(order.at(-1), "local");
+    assert.equal(order.indexOf("pollinations") < order.indexOf("local"), true);
+  } finally {
+    if (previous === undefined) delete process.env.AI_PROVIDER_ORDER;
+    else process.env.AI_PROVIDER_ORDER = previous;
+  }
+});
+
 test("local fallback returns defensive analysis without provider keys", async () => {
   const previous = process.env.AI_PROVIDER_ORDER;
   try {

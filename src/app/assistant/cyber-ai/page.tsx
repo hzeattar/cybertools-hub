@@ -21,7 +21,7 @@ export default async function CyberAiPage() {
   const pro = user ? await hasActiveEntitlement(user.id, "ai_pro") : false;
 
   return (
-    <SiteShell hideFooter wide>
+    <SiteShell hideFooter hideSupport wide>
       <section className="ai-app-section">
         <div className="ai-app-container">
           <CyberAiClient signedIn={Boolean(user)} pro={pro} />
