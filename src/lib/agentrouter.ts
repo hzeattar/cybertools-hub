@@ -535,7 +535,7 @@ export async function callCyberAi(input: CyberAiRequest): Promise<CyberAiResult>
         refused: false,
         provider,
         providerLabel: config.label,
-        fallback: failures.length > 0,
+        fallback: false,
         attempts,
       };
     } catch (error) {
