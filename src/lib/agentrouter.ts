@@ -1,5 +1,5 @@
-const DEFAULT_BASE_URL = "https://co.agentrouter.org/v1";
-const DEFAULT_MODEL = "gpt-5.5";
+const DEFAULT_BASE_URL = "https://agentrouter.org/v1";
+const DEFAULT_MODEL = "gpt-5";
 
 export type CyberAiPlan = "free" | "pro";
 
