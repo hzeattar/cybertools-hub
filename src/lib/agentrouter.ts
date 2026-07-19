@@ -1,5 +1,5 @@
-const DEFAULT_BASE_URL = "https://agentrouter.org/v1";
-const DEFAULT_MODEL = "gpt-5";
+const DEFAULT_BASE_URL = "https://co.agentrouter.org/v1";
+const DEFAULT_MODEL = "gpt-5.5";
 
 export type CyberAiPlan = "free" | "pro";
 
@@ -78,7 +78,24 @@ export async function callCyberAi(input: CyberAiRequest) {
       signal: controller.signal,
     });
 
-    if (!response.ok) throw new Error(`AgentRouter returned ${response.status}`);
+    if (!response.ok) {
+      let detail = "";
+      try {
+        const errorPayload = (await response.json()) as {
+          msg?: string;
+          message?: string;
+          error?: string | { message?: string };
+        };
+        const providerMessage =
+          typeof errorPayload.error === "string"
+            ? errorPayload.error
+            : (errorPayload.error?.message ?? errorPayload.msg ?? errorPayload.message);
+        detail = providerMessage ? `: ${providerMessage}` : "";
+      } catch {
+        detail = "";
+      }
+      throw new Error(`AgentRouter returned ${response.status}${detail}`);
+    }
     const payload = (await response.json()) as {
       choices?: { message?: { content?: string } }[];
       error?: { message?: string };

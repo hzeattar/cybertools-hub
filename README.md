@@ -42,8 +42,8 @@ ADMIN_PASSWORD=replace_with_long_admin_password
 DOWNLOAD_SECRET=replace_with_random_32_byte_secret
 ORDER_HMAC_SECRET=replace_with_random_32_byte_secret
 AGENTROUTER_API_KEY=replace_with_agentrouter_key
-AGENTROUTER_BASE_URL=https://agentrouter.org/v1
-AGENTROUTER_MODEL=gpt-5
+AGENTROUTER_BASE_URL=https://co.agentrouter.org/v1
+AGENTROUTER_MODEL=gpt-5.5
 AI_FREE_DAILY_LIMIT=20
 AI_PRO_DAILY_LIMIT=100
 ```
