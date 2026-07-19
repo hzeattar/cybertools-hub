@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BrainCircuit, LogIn, TerminalSquare, UserCircle } from "lucide-react";
+import { BrainCircuit, LifeBuoy, LogIn, TerminalSquare, UserCircle } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 
 const navItems = [
@@ -60,6 +60,10 @@ export async function SiteShell({
         </div>
       </header>
       <main id="main">{children}</main>
+      <Link className="support-float" href="/contact" aria-label="Talk to support">
+        <LifeBuoy size={17} />
+        <span>Talk to support</span>
+      </Link>
       {!hideFooter ? (
         <footer className="footer">
           <div className="container footer-grid">

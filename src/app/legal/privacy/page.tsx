@@ -36,6 +36,11 @@ export default function PrivacyPage() {
               data.
             </p>
             <p>
+              Support messages submitted through the contact form are stored for admin review and may include your email,
+              order ID, message body, status, and timestamps. Do not send private keys, passwords, or sensitive third-party
+              data in support requests.
+            </p>
+            <p>
               Server logs may include IP address, browser metadata, and API route timestamps for security and abuse
               prevention.
             </p>

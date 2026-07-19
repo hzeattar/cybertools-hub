@@ -7,6 +7,8 @@ CyberTools Hub is a Next.js security tools platform with account-based USDT TRC2
 - Free browser-first security tools with SEO pages.
 - Account registration and login with HttpOnly signed sessions.
 - User-owned orders, signed downloads, and entitlement tracking.
+- Admin manual approval for USDT deposits that need human review.
+- Built-in support inbox surfaced inside `/admin`.
 - AI Pro Pass for 30-day higher Cyber AI limits.
 - Claude-like Cyber AI Workspace with conversations, defensive agents, user-approved memory, keyword RAG, and provider fallback.
 - Cyber AI provider routing: AgentRouter, OpenRouter, Groq, then local defensive fallback.
@@ -87,6 +89,9 @@ POST /api/orders/{orderId}/verify?mock=paid
 ```
 
 This shortcut is disabled when `NODE_ENV=production`.
+
+Admins can manually approve a pending or expired order from `/admin` after checking the external wallet or exchange
+evidence. Manual approval creates the same account entitlement as automated TRONSCAN verification.
 
 ## Cyber AI Workspace
 

@@ -1275,6 +1275,100 @@ textarea {
   color: var(--green);
 }
 
+.support-float {
+  align-items: center;
+  background: var(--green);
+  border: 1px solid rgba(42, 245, 154, 0.9);
+  border-radius: 8px;
+  bottom: 18px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
+  color: #06130f;
+  display: inline-flex;
+  font-weight: 850;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 13px;
+  position: fixed;
+  right: 18px;
+  z-index: 40;
+}
+
+.support-float:hover {
+  background: #70ffb8;
+}
+
+.support-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.compact-textarea {
+  min-height: 150px;
+}
+
+.support-status {
+  flex: 1 1 280px;
+}
+
+.admin-workspace {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.admin-toolbar h2,
+.section-header.compact h2 {
+  color: #f4fff8;
+  font-size: 24px;
+  font-weight: 850;
+}
+
+.admin-grid {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.85fr);
+}
+
+.admin-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-row {
+  background: rgba(49, 215, 255, 0.045);
+  border: 1px solid rgba(49, 215, 255, 0.14);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+  padding: 14px;
+}
+
+.admin-row h3 {
+  color: #f4fff8;
+  font-size: 18px;
+  font-weight: 850;
+  line-height: 1.3;
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+
+.admin-row p {
+  overflow-wrap: anywhere;
+}
+
+.support-row {
+  grid-template-columns: 0.85fr 1fr;
+}
+
 @media (max-width: 1180px) {
   .ai-chat-shell {
     height: auto;
@@ -1332,6 +1426,18 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .ai-chat-main {
+    order: 1;
+  }
+
+  .ai-chat-sidebar {
+    order: 2;
+  }
+
+  .ai-context-rail {
+    order: 3;
+  }
+
   .ai-app-section {
     padding: 10px;
   }
@@ -1357,6 +1463,17 @@ textarea {
   .ai-context-rail {
     grid-template-columns: 1fr;
   }
+
+  .admin-grid,
+  .admin-row,
+  .support-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1365,22 +1482,17 @@ textarea {
   }
 
   .topbar-inner {
-    align-items: center;
-    flex-direction: row;
-    min-height: 58px;
-    overflow-x: auto;
-    padding: 8px 0;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+    min-height: auto;
+    overflow: visible;
+    padding: 9px 0;
   }
 
   .brand {
-    flex: 0 0 auto;
-    font-size: 14px;
-  }
-
-  .brand span:last-child {
-    max-width: 116px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: initial;
+    font-size: 15px;
   }
 
   .brand-mark {
@@ -1389,19 +1501,18 @@ textarea {
   }
 
   .nav {
-    display: flex;
+    display: grid;
+    flex: initial;
     gap: 6px;
-    flex: 1;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    overflow-x: auto;
-    width: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
+    overflow: visible;
+    width: 100%;
   }
 
   .nav a,
   .nav-pill {
     justify-content: center;
-    flex: 0 0 auto;
     font-size: 12px;
     min-height: 34px;
     padding: 7px;
@@ -1512,5 +1623,17 @@ textarea {
   .composer-toolbar .btn,
   .agent-select-label {
     width: 100%;
+  }
+
+  .support-float {
+    bottom: 12px;
+    left: auto;
+    right: 12px;
+    justify-content: center;
+    max-width: calc(100% - 24px);
+  }
+
+  .split {
+    grid-template-columns: 1fr;
   }
 }
