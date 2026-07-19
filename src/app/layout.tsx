@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | CyberTools Hub",
   },
   description:
-    "A dark security research workspace with free cyber tools, Cyber AI Analyst, account-based USDT TRC20 checkout, and downloadable bug bounty kits.",
+    "A dark security research workspace with free cyber tools, multi-provider Cyber AI Analyst, account-based USDT TRC20 checkout, and downloadable bug bounty kits.",
   applicationName: "CyberTools Hub",
   keywords: [
     "bug bounty tools",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "CyberTools Hub",
     description:
-      "Free security tools, defensive Cyber AI, and paid bug bounty templates delivered after verified USDT TRC20 payment.",
+      "Free security tools, defensive multi-provider Cyber AI, and paid bug bounty templates delivered after verified USDT TRC20 payment.",
     url: siteUrl,
     siteName: "CyberTools Hub",
     type: "website",

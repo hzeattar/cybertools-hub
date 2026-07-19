@@ -1,6 +1,6 @@
 # CyberTools Hub
 
-CyberTools Hub is a Next.js security tools platform with account-based USDT TRC20 checkout, paid digital downloads, and a defensive Cyber AI Analyst powered by AgentRouter.
+CyberTools Hub is a Next.js security tools platform with account-based USDT TRC20 checkout, paid digital downloads, and a defensive multi-provider Cyber AI Analyst.
 
 ## What Is Included
 
@@ -8,6 +8,7 @@ CyberTools Hub is a Next.js security tools platform with account-based USDT TRC2
 - Account registration and login with HttpOnly signed sessions.
 - User-owned orders, signed downloads, and entitlement tracking.
 - AI Pro Pass for 30-day higher Cyber AI limits.
+- Cyber AI provider routing: AgentRouter, OpenRouter, Groq, then local defensive fallback.
 - TRONSCAN-backed USDT TRC20 payment verification.
 - Postgres-ready production storage and local JSON dev storage.
 - Dark professional security interface.
@@ -41,14 +42,22 @@ ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=replace_with_long_admin_password
 DOWNLOAD_SECRET=replace_with_random_32_byte_secret
 ORDER_HMAC_SECRET=replace_with_random_32_byte_secret
+AI_PROVIDER_ORDER=agentrouter,openrouter,groq,local
+AI_LOCAL_FALLBACK=enabled
 AGENTROUTER_API_KEY=replace_with_agentrouter_key
-AGENTROUTER_BASE_URL=https://co.agentrouter.org/v1
-AGENTROUTER_MODEL=gpt-5.5
+AGENTROUTER_BASE_URL=https://agentrouter.org/v1
+AGENTROUTER_MODEL=gpt-5
+OPENROUTER_API_KEY=
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+OPENROUTER_MODEL=openrouter/free
+GROQ_API_KEY=
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+GROQ_MODEL=llama-3.1-8b-instant
 AI_FREE_DAILY_LIMIT=20
 AI_PRO_DAILY_LIMIT=100
 ```
 
-Rotate shared API keys before production. Both TRONSCAN and AgentRouter keys must remain server-side environment variables.
+Rotate shared API keys before production. TRONSCAN and AI provider keys must remain server-side environment variables.
 
 ## Auth And Entitlements
 
@@ -86,6 +95,8 @@ This shortcut is disabled when `NODE_ENV=production`.
 - AI Pro users: `AI_PRO_DAILY_LIMIT`, default 100 requests/day.
 - Prompts are not stored by CyberTools Hub; only daily usage counters are stored.
 - The server-side safety layer refuses malware, phishing, credential theft, persistence, harmful automation, and unauthorized exploitation requests.
+- The provider chain is controlled by `AI_PROVIDER_ORDER`. If external providers fail or are not configured, `local` returns deterministic defensive guidance instead of a broken 502 page.
+- AgentRouter docs currently show `https://agentrouter.org/v1` with model `gpt-5`. OpenRouter can be used as a free-tier fallback with `OPENROUTER_API_KEY` and `OPENROUTER_MODEL=openrouter/free`.
 
 ## Railway Notes
 

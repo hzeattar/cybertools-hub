@@ -32,6 +32,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       answer: result.answer,
       refused: result.refused,
+      provider: result.provider,
+      providerLabel: result.providerLabel,
+      fallback: result.fallback,
       plan,
       usage: reservation,
     });

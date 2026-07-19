@@ -7,7 +7,8 @@ import { hasActiveEntitlement } from "@/lib/order-store";
 
 export const metadata: Metadata = {
   title: "Cyber AI Analyst",
-  description: "AI-assisted defensive security analysis for authorized testing, reports, OpenAPI review, and threat modeling.",
+  description:
+    "Multi-provider defensive cyber security analyst with safe local fallback for authorized testing, reports, OpenAPI review, and threat modeling.",
   alternates: { canonical: "/assistant/cyber-ai" },
   openGraph: {
     title: "Cyber AI Analyst - CyberTools Hub",
@@ -22,26 +23,46 @@ export default async function CyberAiPage() {
 
   return (
     <SiteShell>
-      <section className="section">
-        <div className="container">
-          <p className="eyebrow">AI security analyst</p>
-          <h1 className="hero-title compact-title">Cyber AI Analyst</h1>
-          <p className="hero-copy">
-            Ask for defensive code review, header analysis, OpenAPI risk ranking, report wording, scope-safe test plans,
-            or threat modeling. The API key stays server-side and prompts are not stored.
-          </p>
-          <div className="button-row" style={{ marginBottom: 22, marginTop: 18 }}>
-            {!user ? (
-              <Link className="btn primary" href="/login?next=/assistant/cyber-ai">
-                Login to use AI
-              </Link>
-            ) : null}
-            {!pro ? (
-              <Link className="btn secondary" href="/store/ai-pro-pass-30-days">
-                Upgrade to AI Pro
-              </Link>
-            ) : null}
+      <section className="ai-hero-section">
+        <div className="container ai-hero-grid">
+          <div>
+            <p className="eyebrow">Defensive AI operations</p>
+            <h1 className="hero-title compact-title">Cyber AI Analyst</h1>
+            <p className="hero-copy">
+              Security review console for headers, OpenAPI surfaces, code snippets, threat models, and report writing.
+              It routes through configured model providers and falls back to a local defensive analyst when providers fail.
+            </p>
+            <div className="button-row ai-hero-actions">
+              {!user ? (
+                <Link className="btn primary" href="/login?next=/assistant/cyber-ai">
+                  Login to use AI
+                </Link>
+              ) : null}
+              {!pro ? (
+                <Link className="btn secondary" href="/store/ai-pro-pass-30-days">
+                  Upgrade to AI Pro
+                </Link>
+              ) : null}
+            </div>
           </div>
+          <aside className="panel ai-signal-panel">
+            <div className="ai-signal-row">
+              <span>Provider chain</span>
+              <strong>AgentRouter {"->"} OpenRouter {"->"} Groq {"->"} Local</strong>
+            </div>
+            <div className="ai-signal-row">
+              <span>Prompt storage</span>
+              <strong>Disabled by default</strong>
+            </div>
+            <div className="ai-signal-row">
+              <span>Mode</span>
+              <strong>{pro ? "AI Pro" : "Free analyst"}</strong>
+            </div>
+          </aside>
+        </div>
+      </section>
+      <section className="section ai-main-section">
+        <div className="container">
           <CyberAiClient signedIn={Boolean(user)} pro={pro} />
         </div>
       </section>
@@ -50,7 +71,7 @@ export default async function CyberAiPage() {
           {[
             ["Allowed", "Defensive analysis, authorized testing plans, report drafting, secure code/config review."],
             ["Blocked", "Malware, phishing, credential theft, persistence, and unauthorized exploitation."],
-            ["Limits", "Free users get daily balanced usage. AI Pro unlocks a higher daily limit for 30 days."],
+            ["Resilience", "External providers are optional. Local fallback keeps the analyst usable while keys or quotas are fixed."],
           ].map(([title, body]) => (
             <article className="card guide-card" key={title}>
               <h3>{title}</h3>

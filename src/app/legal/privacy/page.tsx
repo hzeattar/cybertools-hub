@@ -26,8 +26,9 @@ export default function PrivacyPage() {
               and download token hashes.
             </p>
             <p>
-              Cyber AI prompts are sent to the configured AgentRouter API to generate responses, but CyberTools Hub does
-              not store prompt text by default. Do not paste private keys, live credentials, or third-party personal data.
+              Cyber AI prompts can be sent to the configured AI provider chain to generate responses. If local fallback
+              is used, no external model request is made. CyberTools Hub does not store prompt text by default. Do not
+              paste private keys, live credentials, or third-party personal data.
             </p>
             <p>
               Server logs may include IP address, browser metadata, and API route timestamps for security and abuse

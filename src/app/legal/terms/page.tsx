@@ -29,6 +29,10 @@ export default function TermsPage() {
               exploitation are not allowed.
             </p>
             <p>
+              AI output can come from configured external providers or the local defensive fallback. You must review
+              results before relying on them for reports, remediation decisions, or customer communication.
+            </p>
+            <p>
               Digital products are delivered after payment verification. Crypto payments are irreversible, so always
               confirm network, token, address, and exact amount before sending.
             </p>
