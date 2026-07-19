@@ -67,7 +67,7 @@ export function getProviderOrder() {
   const configured = process.env.AI_PROVIDER_ORDER ?? "agentrouter,openrouter,groq,local";
   const supported = new Set<CyberAiProvider>(["agentrouter", "openrouter", "groq", "local"]);
   const order = configured
-    .split(",")
+    .split(/[,\s]+/)
     .map((item) => item.trim().toLowerCase())
     .filter((item): item is CyberAiProvider => supported.has(item as CyberAiProvider));
 

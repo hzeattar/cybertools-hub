@@ -33,6 +33,17 @@ test("provider order always keeps local fallback unless disabled", () => {
   }
 });
 
+test("provider order accepts comma or whitespace separators", () => {
+  const previous = process.env.AI_PROVIDER_ORDER;
+  try {
+    process.env.AI_PROVIDER_ORDER = "agentrouter openrouter groq local";
+    assert.deepEqual(getProviderOrder(), ["agentrouter", "openrouter", "groq", "local"]);
+  } finally {
+    if (previous === undefined) delete process.env.AI_PROVIDER_ORDER;
+    else process.env.AI_PROVIDER_ORDER = previous;
+  }
+});
+
 test("local fallback returns defensive analysis without provider keys", async () => {
   const previous = process.env.AI_PROVIDER_ORDER;
   try {
