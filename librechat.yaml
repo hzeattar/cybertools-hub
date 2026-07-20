@@ -46,6 +46,18 @@ endpoints:
     minRelevanceScore: 0.45
     capabilities: ['deferred_tools', 'execute_code', 'file_search', 'actions', 'tools']
   custom:
+    - name: 'Ollama'
+      apiKey: 'sk-no-key-required'
+      baseURL: 'http://ollama:11434/v1'
+      models:
+        default: [
+          "llama3:latest",
+          "codellama:latest"
+        ]
+        fetch: false
+      titleConvo: true
+      titleModel: 'llama3:latest'
+
     - name: 'Pollinations'
       apiKey: '${POLLINATIONS_API_KEY}'
       baseURL: 'https://text.pollinations.ai/openai'

@@ -1,0 +1,115 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cybertools Backend Integration API",
+    "description": "API مخصص لربط الـ Agent في LibreChat بأنظمة المبيعات (Laravel) ومنصات التداول (Node.js) للحصول على تقارير محدثة من قاعدة بيانات MySQL.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.yourdomain.com/v1",
+      "description": "Production Backend Server"
+    }
+  ],
+  "paths": {
+    "/sales/daily-report": {
+      "get": {
+        "operationId": "getDailySalesReport",
+        "summary": "جلب تقرير مبيعات اليوم",
+        "description": "يستدعي إجمالي المبيعات، عدد الطلبات، والأرباح لليوم الحالي من قاعدة بيانات MySQL الخاصة بنظام المبيعات (Laravel).",
+        "responses": {
+          "200": {
+            "description": "تم جلب تقرير المبيعات بنجاح",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_sales": {
+                      "type": "number",
+                      "description": "إجمالي المبيعات"
+                    },
+                    "total_orders": {
+                      "type": "integer",
+                      "description": "عدد الطلبات"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "USD"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "غير مصرح - مفتاح API غير صالح"
+          }
+        }
+      }
+    },
+    "/market/prices": {
+      "get": {
+        "operationId": "getMarketPrices",
+        "summary": "جلب أسعار السوق الحالية",
+        "description": "يسترجع السعر الحالي في السوق لرمز سهم أو عملة معينة من منصة التداول (Node.js).",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "رمز السهم أو العملة (مثل BTC, AAPL)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "تم جلب السعر بنجاح",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "symbol": {
+                      "type": "string"
+                    },
+                    "current_price": {
+                      "type": "number"
+                    },
+                    "last_updated": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "الرمز غير موجود"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

@@ -74,12 +74,14 @@ services:
     container_name: vectordb
     image: pgvector/pgvector:0.8.0-pg15-trixie
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: librechat
+      POSTGRES_USER: librechat
+      POSTGRES_PASSWORD: YourStrongPassword
     restart: always
     volumes:
       - pgdata2:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
   rag_api:
     container_name: rag_api
     image: registry.librechat.ai/danny-avila/librechat-rag-api-dev-lite:latest
@@ -92,5 +94,14 @@ services:
     env_file:
       - .env
 
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: always
+
 volumes:
   pgdata2:
+  ollama_data:
