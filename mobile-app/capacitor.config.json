@@ -1,0 +1,10 @@
+{
+  "appId": "com.cybertoolshub.app",
+  "appName": "Cybertools Hub",
+  "webDir": "www",
+  "server": {
+    "url": "https://your-librechat-domain.example.com",
+    "cleartext": false,
+    "androidScheme": "https"
+  }
+}

@@ -1,0 +1,71 @@
+name: Build Android App
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: 'رابط سيرفر LibreChat على Railway (مثال: https://your-app.up.railway.app)'
+        required: true
+        default: 'https://your-librechat-domain.example.com'
+      build_type:
+        description: 'نوع البناء'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set LibreChat server URL
+        env:
+          LIBRECHAT_SERVER_URL: ${{ github.event.inputs.server_url }}
+        run: node scripts/set-server-url.js
+
+      - name: Sync Capacitor Android project
+        run: npx cap sync android
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build APK (debug)
+        if: ${{ github.event.inputs.build_type == 'debug' }}
+        working-directory: mobile-app/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Build APK (release, unsigned)
+        if: ${{ github.event.inputs.build_type == 'release' }}
+        working-directory: mobile-app/android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cybertools-hub-android-${{ github.event.inputs.build_type }}
+          path: |
+            mobile-app/android/app/build/outputs/apk/debug/*.apk
+            mobile-app/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: ignore

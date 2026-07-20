@@ -1,0 +1,5 @@
+package com.cybertoolshub.app;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}

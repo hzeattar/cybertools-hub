@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cybertools Hub</string>
+    <string name="title_activity_main">Cybertools Hub</string>
+    <string name="package_name">com.cybertoolshub.app</string>
+    <string name="custom_url_scheme">com.cybertoolshub.app</string>
+</resources>

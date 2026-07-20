@@ -1,0 +1,42 @@
+{
+  "name": "cybertools-hub-desktop",
+  "productName": "Cybertools Hub Desktop",
+  "description": "Cybertools Hub desktop client for your self-hosted LibreChat server",
+  "type": "module",
+  "version": "1.0.0",
+  "author": "Cybertools Hub",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "app:dist": "electron-builder",
+    "app:dist:mac": "electron-builder --mac",
+    "app:dist:win": "electron-builder --win",
+    "app:dist:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.cybertoolshub.desktop",
+    "directories": {
+      "buildResources": "resources"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "artifactName": "${productName}-v${version}-mac.${ext}",
+      "identity": null
+    },
+    "win": {
+      "artifactName": "${productName}-v${version}-win.${ext}"
+    },
+    "linux": {
+      "target": "AppImage",
+      "artifactName": "${productName}-v${version}-linux.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "electron-store": "^10.0.0"
+  }
+}
