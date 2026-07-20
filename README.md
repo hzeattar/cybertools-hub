@@ -187,53 +187,12 @@ Keep up with the latest updates by visiting the releases page and notes:
 
 ---
 
-## ⭐ Star History
 
-<p align="center">
-  <a href="https://www.star-history.com/?type=date&repos=danny-avila%2FLibreChat">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=danny-avila/LibreChat&type=date&theme=dark&legend=top-left&sealed_token=CXsk3L39t1nlibOv3pQloYwrz8R_yXxCAe1X3DG8sEnmu3PZvzSRZGf7JvisknF83yXqMwR6IcuKLolIQBulChAOseTYP1TDglfT6clOHXzspF-DJhmmsnGasrGpLfCeOEU56Bx761CJp9xDxza5rbyXW3F1GqWNtDf9pMroBq86vS70ilRWu16VyucF" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=danny-avila/LibreChat&type=date&legend=top-left&sealed_token=CXsk3L39t1nlibOv3pQloYwrz8R_yXxCAe1X3DG8sEnmu3PZvzSRZGf7JvisknF83yXqMwR6IcuKLolIQBulChAOseTYP1TDglfT6clOHXzspF-DJhmmsnGasrGpLfCeOEU56Bx761CJp9xDxza5rbyXW3F1GqWNtDf9pMroBq86vS70ilRWu16VyucF" />
-      <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=danny-avila/LibreChat&type=date&legend=top-left&sealed_token=CXsk3L39t1nlibOv3pQloYwrz8R_yXxCAe1X3DG8sEnmu3PZvzSRZGf7JvisknF83yXqMwR6IcuKLolIQBulChAOseTYP1TDglfT6clOHXzspF-DJhmmsnGasrGpLfCeOEU56Bx761CJp9xDxza5rbyXW3F1GqWNtDf9pMroBq86vS70ilRWu16VyucF" />
-    </picture>
-  </a>
-</p>
+## 🛡️ License & Copyright
 
-<p align="center">
-  <a href="https://trendshift.io/repositories/4685" target="_blank" style="padding: 10px;">
-    <img src="https://trendshift.io/api/badge/repositories/4685" alt="danny-avila%2FLibreChat | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
-  </a>
-  <a href="https://runacap.com/ross-index/q1-24/" target="_blank" rel="noopener" style="margin-left: 20px;">
-    <img style="width: 260px; height: 56px" src="https://runacap.com/wp-content/uploads/2024/04/ROSS_badge_white_Q1_2024.svg" alt="ROSS Index - Fastest Growing Open-Source Startups in Q1 2024 | Runa Capital" width="260" height="56"/>
-  </a>
-</p>
+**Cybertools Hub** is built on top of the open-source LibreChat project.
 
----
+- Original LibreChat core is licensed under the MIT License.
+- All modifications, Desktop/Mobile apps (Electron & Capacitor), Custom Actions, System Prompts, and backend integrations developed within this repository are proprietary additions by **Cybertools Hub**.
 
-## ✨ Contributions
-
-Contributions, suggestions, bug reports and fixes are welcome!
-
-For new features, components, or extensions, please open an issue and discuss before sending a PR.
-
-If you'd like to help translate LibreChat into your language, we'd love your contribution! Improving our translations not only makes LibreChat more accessible to users around the world but also enhances the overall user experience. Please check out our [Translation Guide](https://www.librechat.ai/docs/translation).
-
----
-
-## 💖 This project exists in its current state thanks to all the people who contribute
-
-<a href="https://github.com/danny-avila/LibreChat/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=danny-avila/LibreChat" />
-</a>
-
----
-
-## 🎉 Special Thanks
-
-We thank [Locize](https://locize.com) for their translation management tools that support multiple languages in LibreChat.
-
-<p align="center">
-  <a href="https://locize.com" target="_blank" rel="noopener noreferrer">
-    <img src="https://github.com/user-attachments/assets/d6b70894-6064-475e-bb65-92a9e23e0077" alt="Locize Logo" height="50">
-  </a>
-</p>
+© 2026 Cybertools Hub. All rights reserved for custom modifications.
