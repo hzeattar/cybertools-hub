@@ -49,19 +49,6 @@ endpoints:
     minRelevanceScore: 0.45
     capabilities: ['deferred_tools', 'execute_code', 'file_search', 'actions', 'tools']
   custom:
-    - name: 'Pollinations'
-      apiKey: '${POLLINATIONS_API_KEY}'
-      baseURL: 'https://text.pollinations.ai/openai'
-      models:
-        default:
-          - 'openai-fast'
-          - 'gpt-oss-20b'
-        fetch: false
-      titleConvo: true
-      titleModel: 'openai-fast'
-      dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
-      modelDisplayLabel: 'Pollinations'
-
     - name: 'AgentRouter'
       apiKey: '${AGENTROUTER_API_KEY}'
       baseURL: 'https://agentrouter.org/v1'
@@ -70,8 +57,7 @@ endpoints:
           - 'gpt-5'
           - 'gpt-5.5'
         fetch: false
-      titleConvo: true
-      titleModel: 'gpt-5'
+      titleConvo: false
       dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
       modelDisplayLabel: 'AgentRouter'
 
@@ -82,54 +68,52 @@ endpoints:
         x-librechat-body-parentmessageid: '{{LIBRECHAT_BODY_PARENTMESSAGEID}}'
       models:
         default:
-          - 'deepseek/deepseek-chat-v3-0324:free'
-          - 'meta-llama/llama-3.3-70b-instruct:free'
-        fetch: false
-      titleConvo: true
-      titleModel: 'deepseek/deepseek-chat-v3-0324:free'
-      dropParams: ['stop']
+          - 'openrouter/free'
+          - 'openrouter/auto'
+        fetch: true
+      titleConvo: false
+      dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
       modelDisplayLabel: 'OpenRouter'
 
 modelSpecs:
   list:
     - name: 'cybertools-main'
       label: 'CyberTools AI'
-      description: 'Primary production assistant for general work, coding, research, and defensive security.'
+      description: 'Primary assistant using OpenRouter free routing with automatic selection among available free models.'
       default: true
       preset:
-        endpoint: 'openAI'
-        model: 'gpt-4o-mini'
-        temperature: 0.3
+        endpoint: 'OpenRouter'
+        model: 'openrouter/free'
         instructions: |
           You are CyberTools AI, a professional general-purpose assistant with strong software engineering, system architecture, business analysis, document research, and defensive cybersecurity skills.
           Give accurate, practical, production-ready answers. Prefer verified facts, cite sources when tools provide them, protect secrets and personal data, and clearly state uncertainty.
           For programming and infrastructure tasks, inspect context before changing anything, preserve working behavior, apply least privilege, validate inputs, and include safe rollback guidance.
           Only assist with authorized and defensive security work. Refuse malware, credential theft, phishing, persistence, stealth, evasion, and unauthorized exploitation.
 
+    - name: 'cybertools-smart-router'
+      label: 'CyberTools Smart Router'
+      description: 'OpenRouter automatic smart routing. This may use paid models if the OpenRouter account has credit.'
+      preset:
+        endpoint: 'OpenRouter'
+        model: 'openrouter/auto'
+        instructions: |
+          You are CyberTools AI. Select and use the best available reasoning approach for the task. Produce accurate, practical, well-structured answers and protect sensitive information.
+
     - name: 'agentrouter-gpt5'
       label: 'AgentRouter GPT-5'
-      description: 'Use when a valid AgentRouter key and supported model are configured.'
+      description: 'Use when the AgentRouter account has available credit and supports the configured model.'
       preset:
         endpoint: 'AgentRouter'
         model: 'gpt-5'
 
-    - name: 'openrouter-free'
-      label: 'OpenRouter Free'
-      description: 'Free-tier OpenRouter fallback; model availability and limits may change.'
+    - name: 'cybertools-openai'
+      label: 'CyberTools OpenAI'
+      description: 'Direct OpenAI model. Requires active OpenAI API billing and quota.'
       preset:
-        endpoint: 'OpenRouter'
-        model: 'deepseek/deepseek-chat-v3-0324:free'
-        temperature: 0.7
-
-    - name: 'cybertools-free-chat'
-      label: 'CyberTools Free Backup'
-      description: 'Emergency free fallback; availability is not guaranteed.'
-      preset:
-        endpoint: 'Pollinations'
-        model: 'openai-fast'
-        temperature: 0.7
+        endpoint: 'openAI'
+        model: 'gpt-4o-mini'
         instructions: |
-          You are CyberTools AI, a practical general-purpose assistant with strong defensive cybersecurity and software engineering skills. Help with everyday tasks, programming, security review, reporting, and authorized testing plans. Refuse malware, credential theft, phishing, persistence, evasion, and instructions for unauthorized exploitation.
+          You are CyberTools AI, a professional assistant for software engineering, research, document analysis, and defensive cybersecurity.
 
 memory:
   disabled: false
