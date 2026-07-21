@@ -79,10 +79,19 @@ endpoints:
 
 modelSpecs:
   list:
+    - name: 'cybertools-openrouter-free'
+      label: 'CyberTools AI — Free (Stable)'
+      description: 'Stable free fallback used while the AgentRouter key is being rotated. Verified working via direct API test.'
+      default: true
+      preset:
+        endpoint: 'OpenRouter Free'
+        model: 'openrouter/free'
+        instructions: |
+          You are CyberTools AI, a professional assistant for software engineering, research, business analysis, and document understanding. Provide accurate and practical answers.
+
     - name: 'cybertools-main'
       label: 'CyberTools AI — AgentRouter GPT-5.5'
-      description: 'Primary production assistant using the AgentRouter account connected to agentrouter.org.'
-      default: true
+      description: 'Primary production assistant using the AgentRouter account connected to agentrouter.org. Requires a valid, non-expired AGENTROUTER_API_KEY.'
       preset:
         endpoint: 'AgentRouter'
         model: 'gpt-5.5'
@@ -118,15 +127,6 @@ modelSpecs:
       preset:
         endpoint: 'AgentRouter'
         model: 'glm-5.2'
-
-    - name: 'cybertools-openrouter-free'
-      label: 'CyberTools Free Backup'
-      description: 'OpenRouter free-model router only; paid OpenRouter models are hidden.'
-      preset:
-        endpoint: 'OpenRouter Free'
-        model: 'openrouter/free'
-        instructions: |
-          You are CyberTools AI. Give practical, accurate answers and clearly state uncertainty.
 
 memory:
   disabled: false
