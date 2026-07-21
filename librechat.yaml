@@ -11,6 +11,9 @@ interface:
   bookmarks: true
   multiConvo: true
   fileCitations: true
+  defaultPinnedTools:
+    - 'web_search'
+    - 'file_search'
   prompts:
     use: true
     create: true
@@ -57,52 +60,78 @@ endpoints:
           - 'close-work-4-6'
           - 'glm-5.2'
         fetch: false
-      titleConvo: true
-      titleModel: 'gpt-5.5'
+      titleConvo: false
+      summarize: false
       dropParams: ['stop', 'user', 'temperature', 'top_p', 'frequency_penalty', 'presence_penalty']
       modelDisplayLabel: 'AgentRouter'
 
-    - name: 'OpenRouter'
+    - name: 'OpenRouter Free'
       apiKey: '${OPENROUTER_KEY}'
       baseURL: 'https://openrouter.ai/api/v1'
-      headers:
-        x-librechat-body-parentmessageid: '{{LIBRECHAT_BODY_PARENTMESSAGEID}}'
       models:
         default:
-          - 'openai/gpt-oss-20b:free'
+          - 'openrouter/free'
         fetch: false
-      titleConvo: true
-      titleModel: 'openai/gpt-oss-20b:free'
-      dropParams: ['stop']
-      modelDisplayLabel: 'OpenRouter'
+      titleConvo: false
+      summarize: false
+      dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
+      modelDisplayLabel: 'OpenRouter Free'
 
 modelSpecs:
   list:
-    - name: 'cybertools-free-chat'
-      label: 'CyberTools Free Chat'
-      description: 'Stable free fallback for general chat, coding help, and defensive security analysis.'
+    - name: 'cybertools-openrouter-free'
+      label: 'CyberTools AI — Free (Stable)'
+      description: 'Stable free fallback used while the AgentRouter key is being rotated. Verified working via direct API test.'
       default: true
       preset:
-        endpoint: 'OpenRouter'
-        model: 'openai/gpt-oss-20b:free'
-        temperature: 0.7
+        endpoint: 'OpenRouter Free'
+        model: 'openrouter/free'
         instructions: |
           You are CyberTools AI, a professional assistant for software engineering, research, business analysis, and document understanding. Provide accurate and practical answers.
 
-    - name: 'agentrouter-gpt5-5'
-      label: 'AgentRouter GPT-5.5'
-      description: 'Use when a valid, funded AgentRouter key is configured.'
+    - name: 'cybertools-main'
+      label: 'CyberTools AI — AgentRouter GPT-5.5'
+      description: 'Primary production assistant using the AgentRouter account connected to agentrouter.org. Requires a valid, non-expired AGENTROUTER_API_KEY.'
       preset:
         endpoint: 'AgentRouter'
         model: 'gpt-5.5'
-        temperature: 0.6
         instructions: |
-          You are CyberTools AI, a professional assistant for software engineering, research, business analysis, and document understanding. Provide accurate and practical answers.
+          You are CyberTools AI, a professional general-purpose assistant with strong software engineering, system architecture, business analysis, document research, and defensive security skills.
+          Give accurate, practical, production-ready answers. Prefer verified facts, cite sources when available, protect private information, and clearly state uncertainty.
+          Inspect the available context before making changes, preserve working behavior, validate inputs, and include rollback guidance for infrastructure work.
+
+    - name: 'cybertools-close-work-48'
+      label: 'CyberTools Close Work 4.8'
+      description: 'AgentRouter model available on the connected account.'
+      preset:
+        endpoint: 'AgentRouter'
+        model: 'close-work-4-8'
+
+    - name: 'cybertools-close-work-47'
+      label: 'CyberTools Close Work 4.7'
+      description: 'AgentRouter model available on the connected account.'
+      preset:
+        endpoint: 'AgentRouter'
+        model: 'close-work-4-7'
+
+    - name: 'cybertools-close-work-46'
+      label: 'CyberTools Close Work 4.6'
+      description: 'AgentRouter model available on the connected account.'
+      preset:
+        endpoint: 'AgentRouter'
+        model: 'close-work-4-6'
+
+    - name: 'cybertools-glm-52'
+      label: 'CyberTools GLM 5.2'
+      description: 'GLM 5.2 through the connected AgentRouter account.'
+      preset:
+        endpoint: 'AgentRouter'
+        model: 'glm-5.2'
 
 memory:
   disabled: false
   validKeys: ['preferences', 'work_info', 'personal_info', 'skills', 'interests', 'context']
-  tokenLimit: 10000
+  tokenLimit: 6000
   maxInputTokens: 12000
   personalize: true
 
