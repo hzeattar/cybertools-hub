@@ -10,9 +10,15 @@ Curated reference documents to enrich RAG / Agent Knowledge for CyberTools AI.
 | `secure-coding-php-laravel-vue-node.md` | Original, written for this project | Same as repository |
 | `business-trading-analysis-framework.md` | Original, written for this project | Same as repository |
 | `owasp-defensive-security-summary.md` | Summarized from OWASP Cheat Sheet Series | CC BY-SA 4.0, attributed to OWASP (https://cheatsheetseries.owasp.org/) |
+| `cybersecurity-threat-landscape-mitre-attack.md` | Summarized from MITRE ATT&CK® | Apache License 2.0, attributed to MITRE (https://attack.mitre.org/) |
+| `cybersecurity-vulnerability-classes-cwe-top25.md` | Summarized from CWE Top 25 | MITRE/CISA, freely reusable, attributed (https://cwe.mitre.org/top25/) |
+| `cybersecurity-incident-response-nist.md` | Summarized from NIST SP 800-61 | U.S. government work, public domain (https://csrc.nist.gov/pubs/sp/800/61/r2/final) |
+| `cloud-network-security-hardening.md` | Original, written for this project | Same as repository |
 
 No proprietary, leaked, or third-party copyrighted material is included. Only original
-content and explicitly permissively-licensed (CC BY-SA) material with attribution.
+content and explicitly permissively-licensed / public-domain material with attribution.
+All cybersecurity documents are strictly defensive (hardening, detection, incident
+response) -- none contain exploit code, malware, or offensive/attack instructions.
 
 ## How to Use These as Permanent RAG Knowledge
 
