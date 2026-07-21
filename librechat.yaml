@@ -70,6 +70,8 @@ endpoints:
       baseURL: 'https://openrouter.ai/api/v1'
       models:
         default:
+          - 'nvidia/nemotron-3-ultra-550b-a55b:free'
+          - 'nvidia/nemotron-3-super-120b-a12b:free'
           - 'openrouter/free'
         fetch: false
       titleConvo: false
@@ -81,13 +83,13 @@ modelSpecs:
   list:
     - name: 'cybertools-openrouter-free'
       label: 'CyberTools AI — Free (Stable)'
-      description: 'Stable free fallback used while the AgentRouter key is being rotated. Verified working via direct API test.'
+      description: 'Stable free default: NVIDIA Nemotron 3 Ultra (550B params, 1M context). Used while the AgentRouter key is being rotated. Verified working via direct API test with detailed, accurate answers.'
       default: true
       preset:
         endpoint: 'OpenRouter Free'
-        model: 'openrouter/free'
+        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
         instructions: |
-          You are CyberTools AI, a professional assistant for software engineering, research, business analysis, and document understanding. Provide accurate and practical answers.
+          You are CyberTools AI, a professional assistant for software engineering, research, business analysis, and document understanding. Provide detailed, accurate, and practical answers with real-world knowledge. Prefer specific, well-structured, and thorough responses over vague generalities.
 
     - name: 'cybertools-main'
       label: 'CyberTools AI — AgentRouter GPT-5.5'
