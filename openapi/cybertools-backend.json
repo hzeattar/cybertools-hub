@@ -1,0 +1,203 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CyberTools Backend Sales API",
+    "description": "Read-only API for fetching daily sales reports and current market prices from backend systems. Used by LibreChat Actions.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.cybertools.example.com",
+      "description": "Production backend"
+    }
+  ],
+  "paths": {
+    "/api/v1/reports/daily-sales": {
+      "get": {
+        "operationId": "getDailySalesReport",
+        "summary": "Get today's sales report",
+        "description": "Returns daily sales summary including total revenue, number of orders, average order value, and top products.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date in YYYY-MM-DD format. Defaults to today.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "Currency code, e.g. USD, EGP.",
+            "schema": {
+              "type": "string",
+              "default": "USD"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily sales report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailySalesReport"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key"
+          },
+          "403": {
+            "description": "Forbidden - key does not have read:reports scope"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/market/prices": {
+      "get": {
+        "operationId": "getMarketPrices",
+        "summary": "Get current market prices",
+        "description": "Returns latest market prices for requested symbols.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "symbols",
+            "in": "query",
+            "description": "Comma-separated list of symbols, e.g. BTC-USD,ETH-USD,GOLD.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Market prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketPrices"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "DailySalesReport": {
+        "type": "object",
+        "required": ["date", "totalRevenue", "totalOrders", "averageOrderValue", "currency"],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "totalRevenue": {
+            "type": "number",
+            "description": "Total revenue for the day"
+          },
+          "totalOrders": {
+            "type": "integer",
+            "description": "Total number of orders"
+          },
+          "averageOrderValue": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "topProducts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSummary"
+            }
+          }
+        }
+      },
+      "ProductSummary": {
+        "type": "object",
+        "required": ["productId", "productName", "unitsSold", "revenue"],
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "unitsSold": {
+            "type": "integer"
+          },
+          "revenue": {
+            "type": "number"
+          }
+        }
+      },
+      "MarketPrices": {
+        "type": "object",
+        "required": ["timestamp", "prices"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceEntry"
+            }
+          }
+        }
+      },
+      "PriceEntry": {
+        "type": "object",
+        "required": ["symbol", "price", "currency"],
+        "properties": {
+          "symbol": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "change24h": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

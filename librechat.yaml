@@ -317,3 +317,51 @@ webSearch:
     format: 'markdown'
   safeSearch: 1
   scraperTimeout: 10000
+
+actions:
+  allowedDomains:
+    - 'swapi.dev'
+    - 'librechat.ai'
+    - 'google.com'
+
+fileConfig:
+  endpoints:
+    default:
+      fileLimit: 20
+      fileSizeLimit: 512
+      totalSizeLimit: 1024
+      supportedMimeTypes:
+        - '.*'
+    agents:
+      fileLimit: 20
+      fileSizeLimit: 512
+      totalSizeLimit: 1024
+      supportedMimeTypes:
+        - '.*'
+  serverFileSizeLimit: 1024
+  avatarSizeLimit: 5
+  fileTokenLimit: 100000
+  ocr:
+    supportedMimeTypes:
+      - 'image/.*'
+      - 'application/pdf'
+      - 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      - 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      - 'application/vnd.ms-powerpoint'
+      - 'application/msword'
+      - 'application/vnd.oasis.opendocument.*'
+  text:
+    supportedMimeTypes:
+      - 'text/.*'
+      - 'application/json'
+      - 'application/xml'
+      - 'application/yaml'
+      - 'application/sql'
+      - 'application/csv'
+      - 'application/vnd.coffeescript'
+      - 'application/x-sh'
+      - 'application/x-tar'
+      - 'application/zip'
+      - 'application/x-zip-compressed'
+      - 'application/x-parquet'
+      - 'application/vnd.apache.parquet'
