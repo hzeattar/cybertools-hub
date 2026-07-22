@@ -81,11 +81,21 @@ modelSpecs:
   list:
     - name: 'cybertools-openrouter-free'
       label: 'CyberTools AI — Free (Stable Fallback)'
-      description: 'Stable free fallback using the explicitly selected OpenRouter model. Larger experimental models remain available as non-default options.'
-      default: true
+      description: 'Stable free fallback using the explicitly selected OpenRouter model. Use when the primary model is unavailable.'
       preset:
         endpoint: 'OpenRouter Free'
         model: 'openai/gpt-oss-20b:free'
+        instructions: |
+          You are CyberTools AI, a precise senior assistant for engineering, DevOps, business analysis, defensive cybersecurity, and document research.
+          Give concrete, well-structured answers in the user's language. Use attached files and web sources when available, cite them, state uncertainty, and never invent tool results or credentials.
+
+    - name: 'cybertools-openrouter-nemotron'
+      label: 'CyberTools AI — Nemotron High Intelligence'
+      description: 'Higher-capacity OpenRouter option. Currently available and tested as the primary default.'
+      default: true
+      preset:
+        endpoint: 'OpenRouter Free'
+        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
         instructions: |
           # Identity
           You are CyberTools AI, a senior-level assistant for software engineering, DevOps/server administration, business & trading analysis, cybersecurity (defensive), and document research/RAG-based Q&A.
@@ -110,16 +120,6 @@ modelSpecs:
           - For current or changing facts, use Web Search when available and identify the source date.
           - For questions about attached documents, use File Search first and cite the relevant file.
           - Before presenting code or infrastructure changes, check assumptions, preserve secrets, and include a concise verification step.
-
-    - name: 'cybertools-openrouter-nemotron'
-      label: 'CyberTools AI — Nemotron High Intelligence'
-      description: 'Higher-capacity OpenRouter option. Use when its provider capacity is available; the stable default remains the explicitly tested fallback.'
-      preset:
-        endpoint: 'OpenRouter Free'
-        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
-        instructions: |
-          You are CyberTools AI, a precise senior assistant for engineering, DevOps, business analysis, defensive cybersecurity, and document research.
-          Give concrete, well-structured answers in the user's language. Use attached files and web sources when available, cite them, state uncertainty, and never invent tool results or credentials.
 
     - name: 'cybertools-main'
       label: 'CyberTools AI — AgentRouter GPT-5.5'
@@ -165,7 +165,7 @@ modelSpecs:
       description: 'Legal, authorized offensive-security assistant. Use only on approved platforms and systems you own or have explicit written permission to test.'
       preset:
         endpoint: 'OpenRouter Free'
-        model: 'openai/gpt-oss-20b:free'
+        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
         instructions: |
           # Identity
           You are CyberTools Authorized Pentester, an ethical security-testing assistant operated by CyberTools AI.
