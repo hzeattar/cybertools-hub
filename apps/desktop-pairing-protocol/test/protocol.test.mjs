@@ -31,6 +31,8 @@ test('desktop and client derive complementary session keys', () => {
   const client = createClientHello({
     pairingId: offer.registration.pairingId,
     webOrigin: 'https://chat.example.com',
+    pairingCode: offer.displayCode,
+    codeSalt: offer.registration.codeVerifier.salt,
     now: now + 1_000,
   });
 
@@ -43,7 +45,6 @@ test('desktop and client derive complementary session keys', () => {
   const browser = deriveClientSession({
     clientPrivateState: client.privateState,
     registration: offer.registration,
-    pairingSecret: offer.privateState.pairingSecret,
     now: now + 2_000,
   });
 
@@ -51,6 +52,33 @@ test('desktop and client derive complementary session keys', () => {
   assert.equal(desktop.confirmationCode, browser.confirmationCode);
   assert.equal(desktop.sendKey, browser.receiveKey);
   assert.equal(desktop.receiveKey, browser.sendKey);
+});
+
+test('desktop rejects a client that does not know the pairing code', () => {
+  const now = 1_700_000_000_000;
+  const offer = createPairingOffer({
+    deviceName: 'Development PC',
+    webOrigin: 'https://chat.example.com',
+    now,
+  });
+  const attacker = createClientHello({
+    pairingId: offer.registration.pairingId,
+    webOrigin: 'https://chat.example.com',
+    pairingCode: offer.displayCode === '00000000' ? '00000001' : '00000000',
+    codeSalt: offer.registration.codeVerifier.salt,
+    now: now + 1_000,
+  });
+
+  assert.throws(
+    () =>
+      deriveDesktopSession({
+        privateState: offer.privateState,
+        registration: offer.registration,
+        clientHello: attacker.hello,
+        now: now + 2_000,
+      }),
+    /code proof failed/,
+  );
 });
 
 test('signed envelopes reject tampering and replay', () => {
@@ -121,6 +149,8 @@ test('expired pairing offers are rejected', () => {
   const client = createClientHello({
     pairingId: offer.registration.pairingId,
     webOrigin: 'https://chat.example.com',
+    pairingCode: offer.displayCode,
+    codeSalt: offer.registration.codeVerifier.salt,
     now: 11_000,
   });
   assert.throws(
