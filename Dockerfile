@@ -18,6 +18,9 @@ RUN uv --version
 ARG NODE_MAX_OLD_SPACE_SIZE=6144
 ARG NPM_CI_TIMEOUT_SECONDS=1500
 ARG NPM_CI_ATTEMPTS=2
+ARG RUFLO_SKILLS_REF=26c35b59b40a0a95b286ccf5ac675a15edcc995f
+
+ENV DEPLOYMENT_SKILLS_DIR=/app/skill
 
 RUN mkdir -p /app && chown node:node /app
 WORKDIR /app
@@ -51,9 +54,16 @@ RUN \
         sleep 10 ; \
     done
 
+# Import the pinned Ruflo Agent Skills in a cacheable layer. The importer only
+# traverses ruvnet/ruflo/.agents/skills and validates every package before use.
+COPY --chown=node:node scripts/import-ruflo-skills.mjs ./scripts/import-ruflo-skills.mjs
+RUN RUFLO_SKILLS_REF="${RUFLO_SKILLS_REF}" node scripts/import-ruflo-skills.mjs
+
 COPY --chown=node:node . .
 
 RUN \
+    # Add the Skills capability to the production config with a guarded exact replacement
+    node scripts/enable-librechat-skills.mjs; \
     # React client build with configurable memory
     NODE_OPTIONS="--max-old-space-size=${NODE_MAX_OLD_SPACE_SIZE}" npm run frontend; \
     npm prune --production; \
