@@ -24,6 +24,10 @@ It cannot write, delete, rename, execute commands, launch processes, or expose f
 - Bounded reads and searches: limits prevent accidental memory or disk exhaustion.
 - Local audit: each allowed or rejected operation is recorded in the app data directory.
 
+## Validation
+
+The default-branch `Desktop Bridge CI` workflow validates the frontend build, Rust formatting, and `cargo check` before this gate can be merged.
+
 ## Development
 
 Requirements:
