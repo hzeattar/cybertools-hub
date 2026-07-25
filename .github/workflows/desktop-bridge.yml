@@ -1,6 +1,7 @@
 name: Desktop Bridge
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'apps/desktop-bridge/**'
