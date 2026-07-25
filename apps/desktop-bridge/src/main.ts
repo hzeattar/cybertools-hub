@@ -56,7 +56,10 @@ app.innerHTML = `
       <article>
         <div class="article-header">
           <h2 id="current-title">Select an allowed folder</h2>
-          <button id="up" class="secondary" type="button" disabled>Up</button>
+          <div class="article-actions">
+            <button id="revoke-root" class="danger" type="button" disabled>Revoke access</button>
+            <button id="up" class="secondary" type="button" disabled>Up</button>
+          </div>
         </div>
         <div id="entries" class="list"></div>
         <pre id="preview" hidden></pre>
@@ -74,6 +77,7 @@ const previewEl = document.querySelector<HTMLPreElement>('#preview')!;
 const errorEl = document.querySelector<HTMLElement>('#error')!;
 const titleEl = document.querySelector<HTMLElement>('#current-title')!;
 const addRootButton = document.querySelector<HTMLButtonElement>('#add-root')!;
+const revokeRootButton = document.querySelector<HTMLButtonElement>('#revoke-root')!;
 const upButton = document.querySelector<HTMLButtonElement>('#up')!;
 const searchInput = document.querySelector<HTMLInputElement>('#search')!;
 
@@ -88,6 +92,18 @@ function showError(error: unknown) {
 
 function clearError() {
   errorEl.textContent = '';
+}
+
+function resetSelection() {
+  selectedRoot = null;
+  currentRelativePath = '';
+  titleEl.textContent = 'Select an allowed folder';
+  entriesEl.innerHTML = '<p class="empty">Choose a folder to browse its files.</p>';
+  previewEl.hidden = true;
+  previewEl.textContent = '';
+  searchInput.value = '';
+  revokeRootButton.disabled = true;
+  upButton.disabled = true;
 }
 
 function escapeHtml(value: string) {
@@ -111,6 +127,9 @@ async function loadStatus() {
 
 async function loadRoots() {
   roots = await invoke<AllowedRoot[]>('list_allowed_roots');
+  if (selectedRoot && !roots.some((root) => root.id === selectedRoot?.id)) {
+    resetSelection();
+  }
   rootsEl.innerHTML = '';
   for (const root of roots) {
     const button = document.createElement('button');
@@ -129,6 +148,7 @@ async function selectRoot(root: AllowedRoot) {
   selectedRoot = root;
   currentRelativePath = '';
   previewEl.hidden = true;
+  revokeRootButton.disabled = false;
   await loadRoots();
   await loadDirectory();
 }
@@ -149,6 +169,7 @@ async function loadDirectory() {
     ? `${selectedRoot.label} / ${currentRelativePath}`
     : selectedRoot.label;
   upButton.disabled = currentRelativePath === '';
+  revokeRootButton.disabled = false;
 }
 
 function renderEntries(entries: FileEntry[]) {
@@ -194,9 +215,28 @@ addRootButton.addEventListener('click', async () => {
     if (added) {
       selectedRoot = added;
       currentRelativePath = '';
+      revokeRootButton.disabled = false;
       await Promise.all([loadStatus(), loadRoots()]);
       await loadDirectory();
     }
+  } catch (error) {
+    showError(error);
+  }
+});
+
+revokeRootButton.addEventListener('click', async () => {
+  if (!selectedRoot) {
+    return;
+  }
+  const approved = window.confirm(`Revoke CyberTools access to "${selectedRoot.label}"?`);
+  if (!approved) {
+    return;
+  }
+  try {
+    clearError();
+    await invoke('remove_allowed_root', { rootId: selectedRoot.id });
+    resetSelection();
+    await Promise.all([loadStatus(), loadRoots()]);
   } catch (error) {
     showError(error);
   }
@@ -234,4 +274,5 @@ searchInput.addEventListener('input', () => {
   }, 250);
 });
 
+resetSelection();
 Promise.all([loadStatus(), loadRoots()]).catch(showError);
