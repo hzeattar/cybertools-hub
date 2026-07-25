@@ -1,0 +1,23 @@
+[package]
+name = "cybertools-desktop-bridge"
+version = "0.1.0"
+description = "Security-first local companion for CyberTools"
+authors = ["CyberTools"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "cybertools_desktop_bridge_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde", "clock"] }
+walkdir = "2"
