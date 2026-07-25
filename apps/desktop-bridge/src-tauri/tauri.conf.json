@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "CyberTools Desktop Bridge",
         "width": 1100,
         "height": 760,
@@ -25,7 +26,7 @@
     }
   },
   "bundle": {
-    "active": true,
+    "active": false,
     "targets": "all"
   }
 }
