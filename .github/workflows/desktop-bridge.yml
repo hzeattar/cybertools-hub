@@ -42,8 +42,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-          cache-dependency-path: apps/desktop-bridge/package.json
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -69,4 +67,4 @@ jobs:
 
       - name: Check Rust application
         working-directory: apps/desktop-bridge/src-tauri
-        run: cargo check --locked
+        run: cargo check
