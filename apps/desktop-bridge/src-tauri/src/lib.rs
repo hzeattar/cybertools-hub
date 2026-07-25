@@ -138,14 +138,25 @@ fn find_root(state: &State<'_, BridgeState>, root_id: Uuid) -> Result<AllowedRoo
         .ok_or_else(|| "Allowed root was not found".into())
 }
 
+fn reject_symlink_components(root: &Path, relative_path: &Path) -> Result<(), String> {
+    let mut cursor = root.to_path_buf();
+    for component in relative_path.components() {
+        if let Component::Normal(segment) = component {
+            cursor.push(segment);
+            let metadata = fs::symlink_metadata(&cursor).map_err(|error| error.to_string())?;
+            if metadata.file_type().is_symlink() {
+                return Err("Symbolic links are not followed".into());
+            }
+        }
+    }
+    Ok(())
+}
+
 fn resolve_target(root: &AllowedRoot, relative_path: &str) -> Result<PathBuf, String> {
     let safe_relative = validate_relative_path(relative_path)?;
     let canonical_root = fs::canonicalize(&root.path).map_err(|error| error.to_string())?;
+    reject_symlink_components(&canonical_root, &safe_relative)?;
     let candidate = canonical_root.join(safe_relative);
-    let metadata = fs::symlink_metadata(&candidate).map_err(|error| error.to_string())?;
-    if metadata.file_type().is_symlink() {
-        return Err("Symbolic links are not followed".into());
-    }
     let canonical_target = fs::canonicalize(&candidate).map_err(|error| error.to_string())?;
     if !canonical_target.starts_with(&canonical_root) {
         return Err("Requested path is outside the allowed root".into());
@@ -188,7 +199,9 @@ fn choose_allowed_root(
     let Some(selected) = selected else {
         return Ok(None);
     };
-    let path = selected.into_path().map_err(|_| "The selected folder is not a local path")?;
+    let path = selected
+        .into_path()
+        .map_err(|_| "The selected folder is not a local path")?;
     let canonical = fs::canonicalize(path).map_err(|error| error.to_string())?;
     let metadata = fs::symlink_metadata(&canonical).map_err(|error| error.to_string())?;
     if !metadata.is_dir() || metadata.file_type().is_symlink() {
@@ -213,9 +226,47 @@ fn choose_allowed_root(
         created_at: Utc::now(),
     };
     roots.push(root.clone());
-    persist_roots(&app, &roots)?;
+    if let Err(error) = persist_roots(&app, &roots) {
+        roots.pop();
+        return Err(error);
+    }
     audit(&app, "allow_root", Some(root.id), None, "allowed", None);
     Ok(Some(root))
+}
+
+#[tauri::command]
+fn remove_allowed_root(
+    app: AppHandle,
+    state: State<'_, BridgeState>,
+    root_id: Uuid,
+) -> Result<(), String> {
+    let mut roots = state.roots.lock().map_err(|_| "Root store lock failed")?;
+    let Some(index) = roots.iter().position(|root| root.id == root_id) else {
+        audit(
+            &app,
+            "revoke_root",
+            Some(root_id),
+            None,
+            "rejected",
+            Some("Allowed root was not found".into()),
+        );
+        return Err("Allowed root was not found".into());
+    };
+    let removed = roots.remove(index);
+    if let Err(error) = persist_roots(&app, &roots) {
+        roots.insert(index, removed);
+        audit(
+            &app,
+            "revoke_root",
+            Some(root_id),
+            None,
+            "rejected",
+            Some(error.clone()),
+        );
+        return Err(error);
+    }
+    audit(&app, "revoke_root", Some(root_id), None, "allowed", None);
+    Ok(())
 }
 
 #[tauri::command]
@@ -239,7 +290,13 @@ fn list_directory(
             if metadata.file_type().is_symlink() {
                 continue;
             }
-            let kind = if metadata.is_dir() { "directory" } else if metadata.is_file() { "file" } else { continue };
+            let kind = if metadata.is_dir() {
+                "directory"
+            } else if metadata.is_file() {
+                "file"
+            } else {
+                continue;
+            };
             entries.push(FileEntry {
                 name: entry.file_name().to_string_lossy().into_owned(),
                 relative_path: relative_display(&canonical_root, &entry.path())?,
@@ -247,13 +304,31 @@ fn list_directory(
                 size: metadata.is_file().then_some(metadata.len()),
             });
         }
-        entries.sort_by(|left, right| left.kind.cmp(right.kind).then_with(|| left.name.to_lowercase().cmp(&right.name.to_lowercase())));
+        entries.sort_by(|left, right| {
+            left.kind
+                .cmp(right.kind)
+                .then_with(|| left.name.to_lowercase().cmp(&right.name.to_lowercase()))
+        });
         Ok(entries)
     })();
 
     match &result {
-        Ok(_) => audit(&app, "list_directory", Some(root_id), Some(&relative_path), "allowed", None),
-        Err(error) => audit(&app, "list_directory", Some(root_id), Some(&relative_path), "rejected", Some(error.clone())),
+        Ok(_) => audit(
+            &app,
+            "list_directory",
+            Some(root_id),
+            Some(&relative_path),
+            "allowed",
+            None,
+        ),
+        Err(error) => audit(
+            &app,
+            "list_directory",
+            Some(root_id),
+            Some(&relative_path),
+            "rejected",
+            Some(error.clone()),
+        ),
     }
     result
 }
@@ -272,23 +347,42 @@ fn read_text_file(
         if !target.is_file() {
             return Err("Requested path is not a file".into());
         }
-        let limit = max_bytes.unwrap_or(DEFAULT_MAX_READ_BYTES).min(HARD_MAX_READ_BYTES);
+        let limit = max_bytes
+            .unwrap_or(DEFAULT_MAX_READ_BYTES)
+            .min(HARD_MAX_READ_BYTES);
         let metadata = fs::metadata(&target).map_err(|error| error.to_string())?;
         if metadata.len() > limit {
             return Err(format!("File exceeds the read limit of {limit} bytes"));
         }
-        let mut file = fs::File::open(target).map_err(|error| error.to_string())?;
+        let file = fs::File::open(target).map_err(|error| error.to_string())?;
         let mut bytes = Vec::with_capacity(metadata.len() as usize);
-        file.take(limit + 1).read_to_end(&mut bytes).map_err(|error| error.to_string())?;
+        file.take(limit + 1)
+            .read_to_end(&mut bytes)
+            .map_err(|error| error.to_string())?;
         if bytes.len() as u64 > limit {
             return Err("File exceeded the read limit while reading".into());
         }
-        String::from_utf8(bytes).map_err(|_| "Only UTF-8 text files are supported in foundation mode".into())
+        String::from_utf8(bytes)
+            .map_err(|_| "Only UTF-8 text files are supported in foundation mode".into())
     })();
 
     match &result {
-        Ok(_) => audit(&app, "read_text_file", Some(root_id), Some(&relative_path), "allowed", None),
-        Err(error) => audit(&app, "read_text_file", Some(root_id), Some(&relative_path), "rejected", Some(error.clone())),
+        Ok(_) => audit(
+            &app,
+            "read_text_file",
+            Some(root_id),
+            Some(&relative_path),
+            "allowed",
+            None,
+        ),
+        Err(error) => audit(
+            &app,
+            "read_text_file",
+            Some(root_id),
+            Some(&relative_path),
+            "rejected",
+            Some(error.clone()),
+        ),
     }
     result
 }
@@ -313,7 +407,10 @@ fn search_files(
         let mut visited = 0usize;
         let mut seen = HashSet::new();
 
-        for item in WalkDir::new(&canonical_root).follow_links(false).into_iter() {
+        for item in WalkDir::new(&canonical_root)
+            .follow_links(false)
+            .into_iter()
+        {
             let item = item.map_err(|error| error.to_string())?;
             visited += 1;
             if visited > MAX_SEARCHED_ENTRIES {
@@ -334,7 +431,11 @@ fn search_files(
             entries.push(FileEntry {
                 name,
                 relative_path: relative_display(&canonical_root, &canonical)?,
-                kind: if metadata.is_dir() { "directory" } else { "file" },
+                kind: if metadata.is_dir() {
+                    "directory"
+                } else {
+                    "file"
+                },
                 size: metadata.is_file().then_some(metadata.len()),
             });
             if entries.len() >= result_limit {
@@ -346,7 +447,14 @@ fn search_files(
 
     match &result {
         Ok(_) => audit(&app, "search_files", Some(root_id), None, "allowed", None),
-        Err(error) => audit(&app, "search_files", Some(root_id), None, "rejected", Some(error.clone())),
+        Err(error) => audit(
+            &app,
+            "search_files",
+            Some(root_id),
+            None,
+            "rejected",
+            Some(error.clone()),
+        ),
     }
     result
 }
@@ -356,14 +464,17 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let roots = load_roots(&app.handle()).unwrap_or_default();
-            app.manage(BridgeState { roots: Mutex::new(roots) });
+            let roots = load_roots(app.handle()).unwrap_or_default();
+            app.manage(BridgeState {
+                roots: Mutex::new(roots),
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             bridge_status,
             list_allowed_roots,
             choose_allowed_root,
+            remove_allowed_root,
             list_directory,
             read_text_file,
             search_files
