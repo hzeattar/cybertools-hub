@@ -1,0 +1,72 @@
+name: Desktop Bridge
+
+on:
+  pull_request:
+    paths:
+      - 'apps/desktop-bridge/**'
+      - '.github/workflows/desktop-bridge.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/desktop-bridge/**'
+      - '.github/workflows/desktop-bridge.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            wget
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/desktop-bridge/package.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Cache Rust dependencies
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop-bridge/src-tauri
+
+      - name: Install frontend dependencies
+        working-directory: apps/desktop-bridge
+        run: npm install --no-audit --no-fund
+
+      - name: Build frontend
+        working-directory: apps/desktop-bridge
+        run: npm run build
+
+      - name: Check Rust formatting
+        working-directory: apps/desktop-bridge/src-tauri
+        run: cargo fmt --check
+
+      - name: Check Rust application
+        working-directory: apps/desktop-bridge/src-tauri
+        run: cargo check --locked
