@@ -92,12 +92,17 @@ export function validateWebOrigin(origin, { allowLoopback = false } = {}) {
   return parsed.origin;
 }
 
-export function createCodeVerifier(code, salt = randomBytes(16)) {
+export function derivePairingSecret(code, salt) {
   if (!/^\d{8}$/.test(code)) {
     throw new Error('Pairing code must contain exactly 8 digits');
   }
-  const verifier = scryptSync(code, salt, 32, { N: 16_384, r: 8, p: 1 });
-  return { salt: base64url(salt), verifier: base64url(verifier) };
+  const saltBuffer = Buffer.isBuffer(salt) ? salt : fromBase64url(salt);
+  return scryptSync(code, saltBuffer, 32, { N: 16_384, r: 8, p: 1 });
+}
+
+export function createCodeVerifier(code, salt = randomBytes(16)) {
+  const secret = derivePairingSecret(code, salt);
+  return { salt: base64url(salt), verifier: base64url(sha256(secret)) };
 }
 
 export function verifyPairingCode(code, record) {
@@ -106,11 +111,7 @@ export function verifyPairingCode(code, record) {
   }
   try {
     const expected = fromBase64url(record.verifier);
-    const actual = scryptSync(code, fromBase64url(record.salt), expected.length, {
-      N: 16_384,
-      r: 8,
-      p: 1,
-    });
+    const actual = sha256(derivePairingSecret(code, record.salt));
     return actual.length === expected.length && timingSafeEqual(actual, expected);
   } catch {
     return false;
@@ -133,7 +134,7 @@ export function createPairingOffer({
   const origin = validateWebOrigin(webOrigin);
   const code = randomInt(0, 100_000_000).toString().padStart(8, '0');
   const codeRecord = createCodeVerifier(code);
-  const pairingSecret = randomBytes(32);
+  const pairingSecret = derivePairingSecret(code, codeRecord.salt);
   const desktopKeys = generateKeyPairSync('x25519');
   const pairingId = randomUUID();
 
@@ -160,13 +161,17 @@ export function createPairingOffer({
   };
 }
 
-export function createClientHello({ pairingId, webOrigin, now = Date.now() } = {}) {
+export function createClientHello({ pairingId, webOrigin, pairingCode, codeSalt, now = Date.now() } = {}) {
   if (typeof pairingId !== 'string' || pairingId.length < 16) {
     throw new Error('Invalid pairing identifier');
   }
   const origin = validateWebOrigin(webOrigin);
   const clientKeys = generateKeyPairSync('x25519');
   const nonce = base64url(randomBytes(24));
+  const pairingSecret = derivePairingSecret(pairingCode, codeSalt);
+  const publicKey = exportPublicKey(clientKeys.publicKey);
+  const proofPayload = stableJson({ pairingId, webOrigin: origin, publicKey, nonce, createdAt: now });
+  const codeProof = base64url(createHmac('sha256', pairingSecret).update(proofPayload).digest());
   return {
     privateState: {
       pairingId,
@@ -174,14 +179,16 @@ export function createClientHello({ pairingId, webOrigin, now = Date.now() } = {
       nonce,
       createdAt: now,
       webOrigin: origin,
+      pairingSecret: base64url(pairingSecret),
     },
     hello: {
       version: PROTOCOL_VERSION,
       pairingId,
       webOrigin: origin,
-      publicKey: exportPublicKey(clientKeys.publicKey),
+      publicKey,
       nonce,
       createdAt: now,
+      codeProof,
     },
   };
 }
@@ -209,6 +216,7 @@ function deriveMaterial({ privateKey, peerPublicKey, pairingSecret, transcript }
 
 export function deriveDesktopSession({ privateState, registration, clientHello, now = Date.now() }) {
   assertPairingWindow({ privateState, registration, clientHello, now });
+  verifyClientCodeProof(privateState, clientHello);
   const transcript = pairingTranscript({
     pairingId: registration.pairingId,
     webOrigin: registration.webOrigin,
@@ -225,7 +233,7 @@ export function deriveDesktopSession({ privateState, registration, clientHello, 
   return buildSession(material, transcript, 'desktop');
 }
 
-export function deriveClientSession({ clientPrivateState, registration, pairingSecret, now = Date.now() }) {
+export function deriveClientSession({ clientPrivateState, registration, now = Date.now() }) {
   if (registration.webOrigin !== clientPrivateState.webOrigin) {
     throw new Error('Pairing origin mismatch');
   }
@@ -244,10 +252,27 @@ export function deriveClientSession({ clientPrivateState, registration, pairingS
   const material = deriveMaterial({
     privateKey: clientPrivateState.privateKey,
     peerPublicKey: registration.publicKey,
-    pairingSecret,
+    pairingSecret: clientPrivateState.pairingSecret,
     transcript,
   });
   return buildSession(material, transcript, 'client');
+}
+
+function verifyClientCodeProof(privateState, clientHello) {
+  const proofPayload = stableJson({
+    pairingId: clientHello.pairingId,
+    webOrigin: clientHello.webOrigin,
+    publicKey: clientHello.publicKey,
+    nonce: clientHello.nonce,
+    createdAt: clientHello.createdAt,
+  });
+  const expected = createHmac('sha256', fromBase64url(privateState.pairingSecret))
+    .update(proofPayload)
+    .digest();
+  const actual = fromBase64url(clientHello.codeProof);
+  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+    throw new Error('Pairing code proof failed');
+  }
 }
 
 function assertPairingWindow({ privateState, registration, clientHello, now }) {
