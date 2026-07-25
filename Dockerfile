@@ -62,6 +62,8 @@ RUN RUFLO_SKILLS_REF="${RUFLO_SKILLS_REF}" node scripts/import-ruflo-skills.mjs
 COPY --chown=node:node . .
 
 RUN \
+    # Add the Skills capability to the production config with a guarded exact replacement
+    node scripts/enable-librechat-skills.mjs; \
     # React client build with configurable memory
     NODE_OPTIONS="--max-old-space-size=${NODE_MAX_OLD_SPACE_SIZE}" npm run frontend; \
     npm prune --production; \
