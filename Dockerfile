@@ -54,11 +54,11 @@ RUN \
         sleep 10 ; \
     done
 
-# Import the pinned Ruflo Agent Skills in a cacheable layer. The importer only
-# traverses ruvnet/ruflo/.agents/skills, validates each package, and rewrites
-# human-readable upstream names into LibreChat-safe kebab-case identifiers.
-COPY --chown=node:node scripts/import-ruflo-skills-v2.mjs ./scripts/import-ruflo-skills-v2.mjs
-RUN RUFLO_SKILLS_REF="${RUFLO_SKILLS_REF}" node scripts/import-ruflo-skills-v2.mjs
+# Import the pinned Ruflo Agent Skills in a cacheable layer. The portable
+# importer preserves every Skill body and bundled file while replacing
+# Ruflo-specific metadata with LibreChat-safe name/description frontmatter.
+COPY --chown=node:node scripts/import-ruflo-skills-portable.mjs ./scripts/import-ruflo-skills-portable.mjs
+RUN RUFLO_SKILLS_REF="${RUFLO_SKILLS_REF}" node scripts/import-ruflo-skills-portable.mjs
 
 COPY --chown=node:node . .
 
