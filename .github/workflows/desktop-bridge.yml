@@ -1,5 +1,6 @@
 name: Desktop Bridge
 
+# Validates the standalone read-only desktop companion without affecting Railway.
 on:
   workflow_dispatch:
   pull_request:
