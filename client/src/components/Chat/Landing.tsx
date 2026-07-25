@@ -35,6 +35,9 @@ function getTextSizeClass(text: string | undefined | null) {
   return 'text-lg sm:text-md';
 }
 
+const isolatedBidiStyle = { unicodeBidi: 'isolate' } as const;
+const plaintextBidiStyle = { unicodeBidi: 'plaintext' } as const;
+
 export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: boolean }) {
   const { conversation } = useChatContext();
   const agentsMap = useAgentsMapContext();
@@ -195,7 +198,11 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
             )}
           </div>
           {((isAgent || isAssistant) && name) || name ? (
-            <div className="flex flex-col items-center gap-0 p-2">
+            <div
+              className="flex flex-col items-center gap-0 p-2"
+              dir="auto"
+              style={isolatedBidiStyle}
+            >
               <SplitText
                 key={`split-text-${name}`}
                 text={name}
@@ -211,29 +218,37 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
               />
             </div>
           ) : (
-            <SplitText
-              key={`split-text-${greetingText}${user?.name ? '-user' : ''}`}
-              text={greetingText}
-              className={`${getTextSizeClass(greetingText)} font-medium text-text-primary`}
-              delay={50}
-              textAlign="center"
-              animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
-              animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
-              easing={easings.easeOutCubic}
-              threshold={0}
-              rootMargin="0px"
-              onLineCountChange={handleLineCountChange}
-            />
+            <div dir="auto" style={isolatedBidiStyle}>
+              <SplitText
+                key={`split-text-${greetingText}${user?.name ? '-user' : ''}`}
+                text={greetingText}
+                className={`${getTextSizeClass(greetingText)} font-medium text-text-primary`}
+                delay={50}
+                textAlign="center"
+                animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
+                animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
+                easing={easings.easeOutCubic}
+                threshold={0}
+                rootMargin="0px"
+                onLineCountChange={handleLineCountChange}
+              />
+            </div>
           )}
         </div>
         {description &&
           (descriptionIsHTML ? (
             <div
               className="animate-fadeIn mt-4 flex max-w-md items-center justify-center gap-2 text-center text-sm font-normal text-text-primary [&_img]:inline-block [&_img]:h-4 [&_img]:w-4"
+              dir="auto"
+              style={plaintextBidiStyle}
               dangerouslySetInnerHTML={{ __html: sanitizeDescription(description) }}
             />
           ) : (
-            <div className="animate-fadeIn mt-4 max-w-md text-center text-sm font-normal text-text-primary">
+            <div
+              className="animate-fadeIn mt-4 max-w-md text-center text-sm font-normal text-text-primary"
+              dir="auto"
+              style={plaintextBidiStyle}
+            >
               {description}
             </div>
           ))}
