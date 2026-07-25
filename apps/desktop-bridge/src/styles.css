@@ -24,8 +24,12 @@ h2 { font-size: 16px; margin: 0 0 12px; }
 .workspace { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 18px; min-height: 580px; }
 aside, article { border: 1px solid #292c36; border-radius: 14px; padding: 16px; background: #15171e; overflow: hidden; }
 .article-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.secondary { border: 1px solid #3f4553; border-radius: 8px; padding: 6px 10px; background: transparent; color: #d1d5db; }
-.secondary:disabled { opacity: .4; cursor: default; }
+.article-actions { display: flex; align-items: center; gap: 8px; }
+.secondary, .danger { border-radius: 8px; padding: 6px 10px; background: transparent; }
+.secondary { border: 1px solid #3f4553; color: #d1d5db; }
+.danger { border: 1px solid #7f1d1d; color: #fca5a5; }
+.danger:hover:not(:disabled) { background: #450a0a; }
+.secondary:disabled, .danger:disabled { opacity: .4; cursor: default; }
 .list { display: flex; flex-direction: column; gap: 7px; max-height: 520px; overflow: auto; }
 .list-item { display: flex; flex-direction: column; align-items: flex-start; width: 100%; border: 1px solid transparent; border-radius: 9px; padding: 10px 11px; background: #1d2029; color: #f3f4f6; text-align: left; }
 .list-item:hover, .list-item.selected { border-color: #0891b2; background: #172a31; }
@@ -38,4 +42,5 @@ pre { max-height: 510px; overflow: auto; margin: 14px 0 0; padding: 16px; border
   body { min-width: 0; }
   .workspace { grid-template-columns: 1fr; }
   .controls { grid-template-columns: 1fr; }
+  .article-header { align-items: flex-start; flex-direction: column; }
 }
