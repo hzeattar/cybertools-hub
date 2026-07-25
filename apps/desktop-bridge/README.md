@@ -24,9 +24,37 @@ It cannot write, delete, rename, execute commands, launch processes, or expose f
 - Bounded reads and searches: limits prevent accidental memory or disk exhaustion.
 - Local audit: each allowed or rejected operation is recorded in the app data directory.
 
-## Validation
+## Free local validation on Windows
 
-The default-branch `Desktop Bridge CI` workflow validates the frontend build, Rust formatting, and `cargo check` before this gate can be merged.
+GitHub Actions is optional. The project includes a zero-cost local validator that performs the same required checks directly on a Windows development computer.
+
+Double-click:
+
+```text
+validate-local.cmd
+```
+
+The launcher runs `validate-local.ps1 -InstallMissingTools`, which:
+
+1. checks Node.js 22+ and npm;
+2. installs Node.js LTS with WinGet if it is missing;
+3. installs Rustup with WinGet if it is missing;
+4. configures the stable MSVC Rust toolchain and `rustfmt`;
+5. verifies that Microsoft C++ Build Tools with the Desktop C++ workload is installed;
+6. runs `npm install`, `npm run build`, `cargo fmt --check`, and `cargo check`;
+7. writes a timestamped log under `validation-logs/`.
+
+The script never changes Railway, GitHub secrets, databases, or Production. It only installs public development tools when explicitly launched with `-InstallMissingTools`.
+
+Manual mode without automatic tool installation:
+
+```powershell
+PowerShell -NoProfile -ExecutionPolicy Bypass -File .\validate-local.ps1
+```
+
+## Optional GitHub validation
+
+The default-branch `Desktop Bridge CI` workflow can perform the same frontend and Rust checks when GitHub Actions is available. Local validation remains the fallback when hosted Actions is unavailable or billing-locked.
 
 ## Development
 
@@ -34,7 +62,8 @@ Requirements:
 
 - Rust toolchain compatible with Tauri 2
 - Node.js and npm
-- platform-specific Tauri prerequisites
+- Microsoft C++ Build Tools with Desktop development with C++
+- Microsoft Edge WebView2 for running the app
 
 Commands:
 
