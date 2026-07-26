@@ -72,6 +72,7 @@ export default defineConfig(({ command }) => ({
     'CYBERTOOLS_DESKTOP_PAIRING_ENABLED',
     'CYBERTOOLS_MEMORY_ENABLED',
     'CYBERTOOLS_MEMORY_AUTO_WRITE',
+    'CYBERTOOLS_MODEL_ROUTER_DRY_RUN',
   ],
   plugins: [
     react(),

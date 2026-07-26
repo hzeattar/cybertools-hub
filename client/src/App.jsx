@@ -12,6 +12,7 @@ import QueryDevtoolsGate from '~/components/QueryDevtoolsGate';
 import LanguageSync from '~/components/System/LanguageSync';
 import DesktopPairingDryRun from '~/components/CyberTools/DesktopPairingDryRun';
 import MemoryReviewPanel from '~/components/CyberTools/MemoryReviewPanel';
+import ModelRouterDryRun from '~/components/CyberTools/ModelRouterDryRun';
 import { getThemeFromEnv } from './utils/getThemeFromEnv';
 import { initializeFontSize } from '~/store/fontSize';
 import { LiveAnnouncer } from '~/a11y';
@@ -69,6 +70,7 @@ const App = () => {
                   <RouterProvider router={router} />
                   <DesktopPairingDryRun />
                   <MemoryReviewPanel />
+                  <ModelRouterDryRun />
                   <WakeLockManager />
                   <QueryDevtoolsGate />
                   <Toast />

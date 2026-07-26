@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly CYBERTOOLS_DESKTOP_PAIRING_ENABLED?: string;
   readonly CYBERTOOLS_MEMORY_ENABLED?: string;
   readonly CYBERTOOLS_MEMORY_AUTO_WRITE?: string;
+  readonly CYBERTOOLS_MODEL_ROUTER_DRY_RUN?: string;
   // Add other env variables here
 }
 
