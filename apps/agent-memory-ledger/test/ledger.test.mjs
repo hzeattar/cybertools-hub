@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AgentMemoryLedger,
+  MongoMemoryStorageAdapter,
+  PgVectorMemoryRetrievalAdapter,
   sanitizeForMemory,
 } from '../src/index.mjs';
 
@@ -157,6 +159,94 @@ test('export contains only the requested scope and an audit trail', () => {
   assert.equal(exported.runs.length, 1);
   assert.ok(exported.audit.length >= 2);
   assert.ok(exported.audit.every((event) => event.scope.userId === 'alice'));
+});
+
+function collection() {
+  const rows = [];
+  return {
+    rows,
+    async insertOne(document) {
+      rows.push(structuredClone(document));
+      return { insertedId: document.id };
+    },
+    async deleteMany(filter) {
+      const before = rows.length;
+      for (let index = rows.length - 1; index >= 0; index -= 1) {
+        if (
+          rows[index].scope.userId === filter['scope.userId'] &&
+          rows[index].scope.projectId === filter['scope.projectId']
+        ) {
+          rows.splice(index, 1);
+        }
+      }
+      return { deletedCount: before - rows.length };
+    },
+    find(filter) {
+      return {
+        async toArray() {
+          return rows
+            .filter((row) => (
+              row.scope.userId === filter['scope.userId'] &&
+              row.scope.projectId === filter['scope.projectId']
+            ))
+            .map((row) => structuredClone(row));
+        },
+      };
+    },
+  };
+}
+
+test('mongo adapter redacts, isolates, exports, and deletes scoped memory', async () => {
+  const adapter = new MongoMemoryStorageAdapter({
+    records: collection(),
+    runs: collection(),
+    audit: collection(),
+  });
+  await adapter.saveMemory({
+    scope: aliceAlpha,
+    kind: 'semantic',
+    text: 'Use sk-proj-ABCDEFGHIJKLMNOPQRST',
+    data: { password: 'secret', note: 'ok' },
+  }, { now: 1000 });
+  await adapter.saveMemory({ scope: bobAlpha, kind: 'semantic', text: 'Bob fact' }, { now: 1000 });
+  const exported = await adapter.exportScope(aliceAlpha);
+
+  assert.equal(exported.memories.length, 1);
+  assert.doesNotMatch(exported.memories[0].text, /sk-proj/);
+  assert.equal(exported.memories[0].data.password, '[REDACTED]');
+  assert.equal(exported.memories[0].scope.userId, 'alice');
+  assert.equal((await adapter.deleteScope(aliceAlpha)).memoriesDeleted, 1);
+  assert.equal((await adapter.exportScope(aliceAlpha)).memories.length, 0);
+});
+
+test('pgvector adapter requires approved embeddings and scopes search', async () => {
+  const calls = [];
+  const adapter = new PgVectorMemoryRetrievalAdapter({
+    client: {
+      async query(sql, params) {
+        calls.push({ sql, params });
+        return { rows: [{ memory_id: 'memory-1', text: 'safe', metadata: { apiKey: 'secret' } }] };
+      },
+    },
+  });
+
+  await assert.rejects(() => adapter.search({ scope: aliceAlpha }), /embedding is required/);
+  assert.throws(
+    () => new PgVectorMemoryRetrievalAdapter({ client: { query() {} }, table: 'bad;drop' }),
+    /safe SQL identifier/,
+  );
+  await adapter.upsertEmbedding({
+    scope: aliceAlpha,
+    memoryId: 'memory-1',
+    embedding: [0.1, 0.2],
+    metadata: { token: 'secret' },
+  });
+  const results = await adapter.search({ scope: aliceAlpha, embedding: [0.1, 0.2], limit: 5 });
+
+  assert.equal(calls[0].params[0], 'alice');
+  assert.equal(calls[0].params[1], 'alpha');
+  assert.equal(calls[0].params[5].token, '[REDACTED]');
+  assert.equal(results[0].metadata.apiKey, '[REDACTED]');
 });
 
 test('standalone sanitizer handles depth and unsupported values safely', () => {

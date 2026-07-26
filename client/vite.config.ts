@@ -64,7 +64,15 @@ export default defineConfig(({ command }) => ({
   },
   // Set the directory where environment variables are loaded from and restrict prefixes
   envDir: '../',
-  envPrefix: ['VITE_', 'SCRIPT_', 'DOMAIN_', 'ALLOW_', 'CYBERTOOLS_DESKTOP_PAIRING_ENABLED'],
+  envPrefix: [
+    'VITE_',
+    'SCRIPT_',
+    'DOMAIN_',
+    'ALLOW_',
+    'CYBERTOOLS_DESKTOP_PAIRING_ENABLED',
+    'CYBERTOOLS_MEMORY_ENABLED',
+    'CYBERTOOLS_MEMORY_AUTO_WRITE',
+  ],
   plugins: [
     react(),
     {
