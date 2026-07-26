@@ -11,6 +11,7 @@ import WakeLockManager from '~/components/System/WakeLockManager';
 import QueryDevtoolsGate from '~/components/QueryDevtoolsGate';
 import LanguageSync from '~/components/System/LanguageSync';
 import DesktopPairingDryRun from '~/components/CyberTools/DesktopPairingDryRun';
+import MemoryReviewPanel from '~/components/CyberTools/MemoryReviewPanel';
 import { getThemeFromEnv } from './utils/getThemeFromEnv';
 import { initializeFontSize } from '~/store/fontSize';
 import { LiveAnnouncer } from '~/a11y';
@@ -67,6 +68,7 @@ const App = () => {
                 <DndProvider backend={HTML5Backend}>
                   <RouterProvider router={router} />
                   <DesktopPairingDryRun />
+                  <MemoryReviewPanel />
                   <WakeLockManager />
                   <QueryDevtoolsGate />
                   <Toast />

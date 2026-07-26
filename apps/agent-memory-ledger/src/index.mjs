@@ -21,7 +21,7 @@ const MAX_TAGS = 32;
 const MAX_TOOL_CALLS = 256;
 const MAX_SKILLS = 64;
 const DEFAULT_WORKING_TTL_MS = 24 * 60 * 60 * 1000;
-const SECRET_FIELD_PATTERN = /(api[_-]?key|access[_-]?token|refresh[_-]?token|password|passwd|secret|authorization|cookie|private[_-]?key|credential)/i;
+const SECRET_FIELD_PATTERN = /(api[_-]?key|access[_-]?token|refresh[_-]?token|\btoken\b|password|passwd|secret|authorization|cookie|private[_-]?key|credential)/i;
 const SECRET_TEXT_PATTERNS = [
   /\bsk-[A-Za-z0-9_-]{12,}\b/g,
   /\bsk-proj-[A-Za-z0-9_-]{12,}\b/g,
@@ -510,4 +510,120 @@ function normalizeNonNegativeInteger(value, field, maximum) {
     throw new Error(`${field} must be a non-negative safe integer up to ${maximum}`);
   }
   return value;
+}
+
+function normalizeSqlIdentifier(value, field) {
+  const identifier = assertNonEmptyString(value, field, 128);
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(identifier)) {
+    throw new Error(`${field} must be a safe SQL identifier`);
+  }
+  return identifier;
+}
+
+export class MongoMemoryStorageAdapter {
+  constructor({ records, runs, audit }) {
+    if (!records || !runs || !audit) {
+      throw new Error('records, runs, and audit collections are required');
+    }
+    this.records = records;
+    this.runs = runs;
+    this.audit = audit;
+  }
+
+  async saveMemory(input, { now = Date.now() } = {}) {
+    const ledger = new AgentMemoryLedger();
+    const record = ledger.addMemory(input, { now });
+    await this.records.insertOne(clone(record));
+    await this.audit.insertOne({
+      action: 'memory.saved',
+      scope: record.scope,
+      targetId: record.id,
+      timestamp: now,
+      detail: { adapter: 'mongo' },
+    });
+    return clone(record);
+  }
+
+  async saveRun(input, { now = Date.now() } = {}) {
+    const ledger = new AgentMemoryLedger();
+    const record = ledger.appendRun(input, { now });
+    await this.runs.insertOne(clone(record));
+    await this.audit.insertOne({
+      action: 'run.saved',
+      scope: record.scope,
+      targetId: record.id,
+      timestamp: now,
+      detail: { adapter: 'mongo' },
+    });
+    return clone(record);
+  }
+
+  async deleteScope(scopeInput, { now = Date.now() } = {}) {
+    const scope = normalizeScope(scopeInput);
+    const filter = { 'scope.userId': scope.userId, 'scope.projectId': scope.projectId };
+    const memories = await this.records.deleteMany(filter);
+    const runs = await this.runs.deleteMany(filter);
+    await this.audit.insertOne({
+      action: 'scope.deleted',
+      scope,
+      targetId: null,
+      timestamp: now,
+      detail: sanitizeForMemory({ memoriesDeleted: memories.deletedCount ?? 0, runsDeleted: runs.deletedCount ?? 0 }),
+    });
+    return { memoriesDeleted: memories.deletedCount ?? 0, runsDeleted: runs.deletedCount ?? 0 };
+  }
+
+  async exportScope(scopeInput) {
+    const scope = normalizeScope(scopeInput);
+    const filter = { 'scope.userId': scope.userId, 'scope.projectId': scope.projectId };
+    const memories = await this.records.find(filter).toArray();
+    const runs = await this.runs.find(filter).toArray();
+    const audit = await this.audit.find(filter).toArray();
+    return sanitizeForMemory({ version: 1, scope, memories, runs, audit });
+  }
+}
+
+export class PgVectorMemoryRetrievalAdapter {
+  constructor({ client, table = 'agent_memory_vectors' }) {
+    if (!client || typeof client.query !== 'function') {
+      throw new Error('A pg client with query(sql, params) is required');
+    }
+    this.client = client;
+    this.table = normalizeSqlIdentifier(table, 'table');
+  }
+
+  async upsertEmbedding({ scope: scopeInput, memoryId, embedding, text = '', metadata = {} }) {
+    const scope = normalizeScope(scopeInput);
+    if (!Array.isArray(embedding) || embedding.length === 0 || embedding.some((value) => typeof value !== 'number' || !Number.isFinite(value))) {
+      throw new Error('embedding must be a non-empty numeric array supplied by an approved embedding job');
+    }
+    const sanitizedMetadata = sanitizeForMemory(metadata);
+    await this.client.query(
+      `insert into ${this.table} (user_id, project_id, memory_id, embedding, text, metadata)
+       values ($1, $2, $3, $4, $5, $6)
+       on conflict (user_id, project_id, memory_id)
+       do update set embedding = excluded.embedding, text = excluded.text, metadata = excluded.metadata`,
+      [scope.userId, scope.projectId, assertNonEmptyString(memoryId, 'memoryId', 128), embedding, sanitizeForMemory(text), sanitizedMetadata],
+    );
+    return { scope, memoryId, embedded: true };
+  }
+
+  async search({ scope: scopeInput, embedding, limit = 10 }) {
+    const scope = normalizeScope(scopeInput);
+    if (!Array.isArray(embedding) || embedding.length === 0) {
+      throw new Error('embedding is required; this adapter never creates embeddings automatically');
+    }
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 50) {
+      throw new Error('limit must be between 1 and 50');
+    }
+    const result = await this.client.query(
+      `select memory_id, text, metadata
+       from ${this.table}
+       where user_id = $1 and project_id = $2
+       order by embedding <=> $3
+       limit $4`,
+      [scope.userId, scope.projectId, embedding, limit],
+    );
+    return sanitizeForMemory(result.rows ?? []);
+  }
 }
