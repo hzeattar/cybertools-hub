@@ -10,6 +10,7 @@ import { ScreenshotProvider, useApiErrorBoundary } from './hooks';
 import WakeLockManager from '~/components/System/WakeLockManager';
 import QueryDevtoolsGate from '~/components/QueryDevtoolsGate';
 import LanguageSync from '~/components/System/LanguageSync';
+import DesktopPairingDryRun from '~/components/CyberTools/DesktopPairingDryRun';
 import { getThemeFromEnv } from './utils/getThemeFromEnv';
 import { initializeFontSize } from '~/store/fontSize';
 import { LiveAnnouncer } from '~/a11y';
@@ -65,6 +66,7 @@ const App = () => {
               <ToastProvider>
                 <DndProvider backend={HTML5Backend}>
                   <RouterProvider router={router} />
+                  <DesktopPairingDryRun />
                   <WakeLockManager />
                   <QueryDevtoolsGate />
                   <Toast />
