@@ -5,6 +5,7 @@ import {
   createCandidate,
   createEvaluationDataset,
 } from '../src/index.mjs';
+import { AgentMemoryLedger } from '../../agent-memory-ledger/src/index.mjs';
 
 const scope = Object.freeze({ ownerId: 'alice', projectId: 'alpha' });
 
@@ -179,4 +180,49 @@ test('two distinct human approvals can be required', async () => {
   assert.throws(() => sandbox.createPromotionPlan(report.id, { scope, requiredApprovals: 2 }), /threshold/);
   sandbox.approve(report.id, { scope, approverId: 'reviewer-b' });
   assert.equal(sandbox.createPromotionPlan(report.id, { scope, requiredApprovals: 2 }).approvalIds.length, 3);
+});
+
+test('evaluation reports append offline run ledger records without secrets', async () => {
+  const sandbox = new EvaluationSandbox();
+  const ledger = new AgentMemoryLedger();
+  const report = await sandbox.evaluate({
+    dataset: dataset(),
+    candidate: candidate(),
+    runner: async () => ({ outcome: 'pass', quality: 1, safety: 1, output: { token: 'secret' } }),
+    now: 3000,
+  });
+  const run = sandbox.appendOfflineReportToLedger(report.id, { scope, ledger, now: 4000 });
+
+  assert.equal(run.scope.userId, 'alice');
+  assert.equal(run.scope.projectId, 'alpha');
+  assert.equal(run.intent, 'offline_evaluation_report');
+  assert.equal(run.provider, 'offline');
+  assert.equal(run.metadata.approvalState, 'eligible_for_staging');
+  assert.equal(ledger.listRuns({ scope: { userId: 'alice', projectId: 'alpha' } }).length, 1);
+  assert.doesNotMatch(JSON.stringify(run), /secret/);
+});
+
+test('manual approval states are scoped and never promote production automatically', async () => {
+  const sandbox = new EvaluationSandbox();
+  const report = await sandbox.evaluate({
+    dataset: dataset(),
+    candidate: candidate(),
+    runner: async () => ({ outcome: 'pass', quality: 1, safety: 1 }),
+  });
+  const approved = sandbox.setApprovalState(report.id, {
+    scope,
+    state: 'approved_for_staging',
+    reviewerId: 'reviewer-a',
+    now: 5000,
+  });
+
+  assert.equal(approved.state, 'approved_for_staging');
+  assert.equal(sandbox.getApprovalState(report.id, scope).state, 'approved_for_staging');
+  assert.throws(
+    () => sandbox.setApprovalState(report.id, { scope: { ownerId: 'bob', projectId: 'alpha' }, state: 'rejected', reviewerId: 'bob' }),
+    /not found/,
+  );
+  sandbox.approve(report.id, { scope, approverId: 'reviewer-a' });
+  assert.equal(sandbox.createPromotionPlan(report.id, { scope, target: 'staging' }).target, 'staging');
+  assert.equal(sandbox.createPromotionPlan(report.id, { scope, target: 'staging' }).status, 'ready_for_manual_promotion');
 });
