@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 
 const OUTCOMES = new Set(['pass', 'fail', 'error']);
 const SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
+const APPROVAL_STATES = new Set(['eligible_for_staging', 'approved_for_staging', 'rejected']);
 const SECRET_FIELD_PATTERN = /(secret|token|password|api[_-]?key|authorization|cookie|private[_-]?key|credential)/i;
 const SECRET_PATTERNS = [
   /\bsk-[A-Za-z0-9_-]{12,}\b/g,
@@ -211,6 +212,7 @@ function aggregate(results, weights) {
 export class EvaluationSandbox {
   #reports = new Map();
   #approvals = new Map();
+  #approvalStates = new Map();
 
   async evaluate({ dataset, candidate, runner, weights, thresholds, baselineReport = null, now = Date.now() }) {
     verifySameScope(dataset.scope, candidate.scope);
@@ -277,6 +279,11 @@ export class EvaluationSandbox {
       evaluatedAt: assertTimestamp(now, 'now'),
     });
     this.#reports.set(report.id, report);
+    this.#approvalStates.set(report.id, Object.freeze({
+      state: report.eligibleForApproval ? 'eligible_for_staging' : 'rejected',
+      reason: report.eligibleForApproval ? null : 'regression_or_safety_blocker',
+      updatedAt: assertTimestamp(now, 'now'),
+    }));
     return structuredClone(report);
   }
 
@@ -297,6 +304,57 @@ export class EvaluationSandbox {
     approvals.push(approval);
     this.#approvals.set(reportId, approvals);
     return structuredClone(approval);
+  }
+
+  setApprovalState(reportId, { scope: scopeInput, state, reviewerId, reason = null, now = Date.now() }) {
+    const scope = normalizeScope(scopeInput);
+    const report = this.#reports.get(reportId);
+    if (!report || scopeKey(report.scope) !== scopeKey(scope)) throw new Error('Report was not found in this scope');
+    if (!APPROVAL_STATES.has(state)) throw new Error('Unsupported approval state');
+    if (state === 'approved_for_staging' && !report.eligibleForApproval) {
+      throw new Error('Blocked report cannot be approved for staging');
+    }
+    const record = Object.freeze({
+      state,
+      reviewerId: assertString(reviewerId, 'reviewerId', 256),
+      reason: reason == null ? null : sanitize(reason),
+      updatedAt: assertTimestamp(now, 'now'),
+    });
+    this.#approvalStates.set(reportId, record);
+    return structuredClone(record);
+  }
+
+  getApprovalState(reportId, scopeInput) {
+    const scope = normalizeScope(scopeInput);
+    const report = this.#reports.get(reportId);
+    if (!report || scopeKey(report.scope) !== scopeKey(scope)) return null;
+    return structuredClone(this.#approvalStates.get(reportId) ?? null);
+  }
+
+  appendOfflineReportToLedger(reportId, { scope: scopeInput, ledger, now = Date.now() }) {
+    const scope = normalizeScope(scopeInput);
+    const report = this.#reports.get(reportId);
+    if (!report || scopeKey(report.scope) !== scopeKey(scope)) throw new Error('Report was not found in this scope');
+    if (!ledger || typeof ledger.appendRun !== 'function') {
+      throw new Error('An Agent Run Ledger with appendRun is required');
+    }
+    return ledger.appendRun({
+      scope: { userId: scope.ownerId, projectId: scope.projectId },
+      intent: 'offline_evaluation_report',
+      agent: 'evaluation-sandbox',
+      outcome: report.blockers.length === 0 ? 'success' : 'failure',
+      provider: 'offline',
+      model: 'none',
+      cost: 0,
+      metadata: {
+        reportId: report.id,
+        datasetHash: report.datasetHash,
+        candidateHash: report.candidateHash,
+        summary: report.summary,
+        blockers: report.blockers,
+        approvalState: this.#approvalStates.get(reportId)?.state ?? null,
+      },
+    }, { now });
   }
 
   createPromotionPlan(reportId, { scope: scopeInput, requiredApprovals = 1, target = 'staging', now = Date.now() }) {
