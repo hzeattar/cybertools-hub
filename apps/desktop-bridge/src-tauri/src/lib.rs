@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::{
     collections::HashSet,
     fs,
@@ -17,6 +18,19 @@ const DEFAULT_MAX_READ_BYTES: u64 = 512_000;
 const HARD_MAX_READ_BYTES: u64 = 2_000_000;
 const HARD_MAX_SEARCH_RESULTS: usize = 500;
 const MAX_SEARCHED_ENTRIES: usize = 50_000;
+const PAIRING_TTL_SECONDS: i64 = 5 * 60;
+const SESSION_TTL_SECONDS: i64 = 30 * 60;
+const LOOPBACK_ORIGINS: &[&str] = &["http://localhost", "http://127.0.0.1", "http://[::1]"];
+const READ_ONLY_CAPABILITIES: &[&str] =
+    &["filesystem.list", "filesystem.read", "filesystem.search"];
+const DENIED_CAPABILITIES: &[&str] = &[
+    "filesystem.write",
+    "filesystem.delete",
+    "filesystem.rename",
+    "process.execute",
+    "terminal.open",
+    "network.listen",
+];
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct AllowedRoot {
@@ -42,6 +56,39 @@ struct BridgeStatus {
     allowed_root_count: usize,
 }
 
+#[derive(Debug, Serialize, Clone)]
+struct PairingOffer {
+    pairing_id: Uuid,
+    pairing_code: String,
+    confirmation_fingerprint: String,
+    expires_at: DateTime<Utc>,
+    capabilities: Vec<&'static str>,
+    denied_capabilities: Vec<&'static str>,
+    transport: &'static str,
+}
+
+#[derive(Debug, Serialize, Clone)]
+struct PairingSession {
+    session_id: Uuid,
+    pairing_id: Uuid,
+    confirmation_fingerprint: String,
+    capabilities: Vec<&'static str>,
+    created_at: DateTime<Utc>,
+    expires_at: DateTime<Utc>,
+    revoked_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Serialize, Clone)]
+struct PairingStatus {
+    offer: Option<PairingOffer>,
+    session: Option<PairingSession>,
+}
+
+#[derive(Debug, Clone)]
+struct PairingOfferState {
+    offer: PairingOffer,
+}
+
 #[derive(Debug, Serialize)]
 struct AuditEvent {
     timestamp: DateTime<Utc>,
@@ -55,6 +102,66 @@ struct AuditEvent {
 #[derive(Default)]
 struct BridgeState {
     roots: Mutex<Vec<AllowedRoot>>,
+    pairing_offer: Mutex<Option<PairingOfferState>>,
+    pairing_session: Mutex<Option<PairingSession>>,
+}
+
+fn pairing_code_from_uuid(id: Uuid) -> String {
+    let mut value = 0u32;
+    for byte in id.as_bytes().iter().take(4) {
+        value = (value << 8) | u32::from(*byte);
+    }
+    format!("{:08}", value % 100_000_000)
+}
+
+fn fingerprint_for(pairing_id: Uuid, pairing_code: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(pairing_id.as_bytes());
+    hasher.update(pairing_code.as_bytes());
+    let digest = hasher.finalize();
+    digest
+        .iter()
+        .take(6)
+        .map(|byte| format!("{byte:02X}"))
+        .collect::<Vec<_>>()
+        .join(":")
+}
+
+fn is_loopback_origin(origin: &str) -> bool {
+    LOOPBACK_ORIGINS.iter().any(|allowed| {
+        origin == *allowed
+            || origin
+                .strip_prefix(allowed)
+                .is_some_and(|suffix| suffix.starts_with(':') || suffix.starts_with('/'))
+    })
+}
+
+fn ensure_read_only_capabilities(requested: &[String]) -> Result<(), String> {
+    let allowed: HashSet<&str> = READ_ONLY_CAPABILITIES.iter().copied().collect();
+    for capability in requested {
+        if !allowed.contains(capability.as_str()) {
+            return Err(format!("Capability is not allowed: {capability}"));
+        }
+    }
+    Ok(())
+}
+
+fn active_pairing_status(state: &BridgeState, now: DateTime<Utc>) -> Result<PairingStatus, String> {
+    let offer = state
+        .pairing_offer
+        .lock()
+        .map_err(|_| "Pairing offer lock failed")?
+        .as_ref()
+        .filter(|offer| offer.offer.expires_at > now)
+        .map(|offer| offer.offer.clone());
+    let session = state
+        .pairing_session
+        .lock()
+        .map_err(|_| "Pairing session lock failed")?
+        .as_ref()
+        .filter(|session| session.revoked_at.is_none() && session.expires_at > now)
+        .cloned();
+    Ok(PairingStatus { offer, session })
 }
 
 fn data_dir(app: &AppHandle) -> Result<PathBuf, String> {
@@ -182,6 +289,136 @@ fn bridge_status(state: State<'_, BridgeState>) -> Result<BridgeStatus, String> 
         network_enabled: false,
         allowed_root_count: roots.len(),
     })
+}
+
+#[tauri::command]
+fn pairing_status(state: State<'_, BridgeState>) -> Result<PairingStatus, String> {
+    active_pairing_status(&state, Utc::now())
+}
+
+#[tauri::command]
+fn create_pairing_offer(
+    app: AppHandle,
+    state: State<'_, BridgeState>,
+) -> Result<PairingOffer, String> {
+    let now = Utc::now();
+    let pairing_id = Uuid::new_v4();
+    let pairing_code = pairing_code_from_uuid(pairing_id);
+    let offer = PairingOffer {
+        pairing_id,
+        confirmation_fingerprint: fingerprint_for(pairing_id, &pairing_code),
+        pairing_code,
+        expires_at: now + chrono::Duration::seconds(PAIRING_TTL_SECONDS),
+        capabilities: READ_ONLY_CAPABILITIES.to_vec(),
+        denied_capabilities: DENIED_CAPABILITIES.to_vec(),
+        transport: "loopback-or-outbound-only",
+    };
+    *state
+        .pairing_offer
+        .lock()
+        .map_err(|_| "Pairing offer lock failed")? = Some(PairingOfferState {
+        offer: offer.clone(),
+    });
+    audit(
+        &app,
+        "pairing_offer",
+        None,
+        None,
+        "allowed",
+        Some(format!("pairing_id={}", offer.pairing_id)),
+    );
+    Ok(offer)
+}
+
+#[tauri::command]
+fn confirm_pairing_code(
+    app: AppHandle,
+    state: State<'_, BridgeState>,
+    pairing_id: Uuid,
+    pairing_code: String,
+    web_origin: String,
+    requested_capabilities: Vec<String>,
+) -> Result<PairingSession, String> {
+    let result: Result<PairingSession, String> = (|| {
+        if !is_loopback_origin(&web_origin) {
+            return Err(
+                "Pairing confirmation is restricted to loopback or outbound-only flows".into(),
+            );
+        }
+        ensure_read_only_capabilities(&requested_capabilities)?;
+        let now = Utc::now();
+        let mut offer_guard = state
+            .pairing_offer
+            .lock()
+            .map_err(|_| "Pairing offer lock failed")?;
+        let Some(offer_state) = offer_guard.as_ref() else {
+            return Err("No active pairing offer".into());
+        };
+        if offer_state.offer.pairing_id != pairing_id {
+            return Err("Pairing offer does not match".into());
+        }
+        if offer_state.offer.expires_at <= now {
+            return Err("Pairing offer expired".into());
+        }
+        if offer_state.offer.pairing_code != pairing_code {
+            return Err("Pairing code was rejected".into());
+        }
+        let session = PairingSession {
+            session_id: Uuid::new_v4(),
+            pairing_id,
+            confirmation_fingerprint: offer_state.offer.confirmation_fingerprint.clone(),
+            capabilities: READ_ONLY_CAPABILITIES.to_vec(),
+            created_at: now,
+            expires_at: now + chrono::Duration::seconds(SESSION_TTL_SECONDS),
+            revoked_at: None,
+        };
+        *state
+            .pairing_session
+            .lock()
+            .map_err(|_| "Pairing session lock failed")? = Some(session.clone());
+        *offer_guard = None;
+        Ok(session)
+    })();
+
+    match &result {
+        Ok(session) => audit(
+            &app,
+            "pairing_confirm",
+            None,
+            None,
+            "allowed",
+            Some(format!("session_id={}", session.session_id)),
+        ),
+        Err(error) => audit(
+            &app,
+            "pairing_confirm",
+            None,
+            None,
+            "rejected",
+            Some(error.clone()),
+        ),
+    }
+    result
+}
+
+#[tauri::command]
+fn revoke_pairing_session(app: AppHandle, state: State<'_, BridgeState>) -> Result<(), String> {
+    let mut session = state
+        .pairing_session
+        .lock()
+        .map_err(|_| "Pairing session lock failed")?;
+    if let Some(current) = session.as_mut() {
+        current.revoked_at = Some(Utc::now());
+        audit(
+            &app,
+            "pairing_revoke",
+            None,
+            None,
+            "allowed",
+            Some(format!("session_id={}", current.session_id)),
+        );
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -532,6 +769,84 @@ mod tests {
         fs::remove_dir_all(root_path).expect("cleanup root");
         fs::remove_dir_all(outside_path).expect("cleanup outside");
     }
+
+    #[test]
+    fn rejects_pairing_capability_escalation() {
+        assert!(ensure_read_only_capabilities(&[
+            "filesystem.list".to_string(),
+            "filesystem.read".to_string(),
+        ])
+        .is_ok());
+        assert!(ensure_read_only_capabilities(&["filesystem.write".to_string()]).is_err());
+        assert!(ensure_read_only_capabilities(&["network.listen".to_string()]).is_err());
+    }
+
+    #[test]
+    fn pairing_fingerprint_detects_tampering() {
+        let pairing_id = Uuid::new_v4();
+        let code = pairing_code_from_uuid(pairing_id);
+        let fingerprint = fingerprint_for(pairing_id, &code);
+
+        assert_eq!(fingerprint, fingerprint_for(pairing_id, &code));
+        assert_ne!(fingerprint, fingerprint_for(pairing_id, "00000000"));
+        assert_ne!(fingerprint, fingerprint_for(Uuid::new_v4(), &code));
+    }
+
+    #[test]
+    fn pairing_status_filters_expired_and_revoked_state() {
+        let now = Utc::now();
+        let active_offer = PairingOffer {
+            pairing_id: Uuid::new_v4(),
+            pairing_code: "12345678".into(),
+            confirmation_fingerprint: "AA:BB:CC:DD:EE:FF".into(),
+            expires_at: now + chrono::Duration::seconds(1),
+            capabilities: READ_ONLY_CAPABILITIES.to_vec(),
+            denied_capabilities: DENIED_CAPABILITIES.to_vec(),
+            transport: "loopback-or-outbound-only",
+        };
+        let state = BridgeState {
+            roots: Mutex::new(Vec::new()),
+            pairing_offer: Mutex::new(Some(PairingOfferState {
+                offer: active_offer.clone(),
+            })),
+            pairing_session: Mutex::new(Some(PairingSession {
+                session_id: Uuid::new_v4(),
+                pairing_id: active_offer.pairing_id,
+                confirmation_fingerprint: active_offer.confirmation_fingerprint.clone(),
+                capabilities: READ_ONLY_CAPABILITIES.to_vec(),
+                created_at: now,
+                expires_at: now + chrono::Duration::seconds(1),
+                revoked_at: None,
+            })),
+        };
+
+        let active = active_pairing_status(&state, now).expect("active status");
+        assert!(active.offer.is_some());
+        assert!(active.session.is_some());
+
+        let expired = active_pairing_status(&state, now + chrono::Duration::seconds(2))
+            .expect("expired status");
+        assert!(expired.offer.is_none());
+        assert!(expired.session.is_none());
+
+        state
+            .pairing_session
+            .lock()
+            .expect("session lock")
+            .as_mut()
+            .expect("session")
+            .revoked_at = Some(now);
+        let revoked = active_pairing_status(&state, now).expect("revoked status");
+        assert!(revoked.session.is_none());
+    }
+
+    #[test]
+    fn loopback_origin_only_blocks_public_confirmation() {
+        assert!(is_loopback_origin("http://localhost:5173"));
+        assert!(is_loopback_origin("http://127.0.0.1:5173"));
+        assert!(!is_loopback_origin("https://example.com"));
+        assert!(!is_loopback_origin("http://192.168.1.10:5173"));
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -542,11 +857,17 @@ pub fn run() {
             let roots = load_roots(app.handle()).unwrap_or_default();
             app.manage(BridgeState {
                 roots: Mutex::new(roots),
+                pairing_offer: Mutex::new(None),
+                pairing_session: Mutex::new(None),
             });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             bridge_status,
+            pairing_status,
+            create_pairing_offer,
+            confirm_pairing_code,
+            revoke_pairing_session,
             list_allowed_roots,
             choose_allowed_root,
             remove_allowed_root,
