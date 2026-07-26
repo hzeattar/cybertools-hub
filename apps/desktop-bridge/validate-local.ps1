@@ -113,14 +113,102 @@ Then restart PowerShell and rerun this script.
 
   $installationPath = (& $vsWhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | Select-Object -First 1)
   if ([string]::IsNullOrWhiteSpace($installationPath)) {
+    $installationPath = (& $vsWhere -latest -products '*' -property installationPath | Select-Object -First 1)
+  }
+  if ([string]::IsNullOrWhiteSpace($installationPath)) {
+    $fallbackPath = Join-Path $programFilesX86 'Microsoft Visual Studio\2022\BuildTools'
+    if (Test-Path $fallbackPath) {
+      $installationPath = $fallbackPath
+    }
+  }
+  if ([string]::IsNullOrWhiteSpace($installationPath)) {
     throw @'
-Visual Studio Build Tools exists, but the C++ workload is missing.
-Open Visual Studio Installer, modify Build Tools 2022, and enable:
+Visual Studio Build Tools exists, but no installation path could be resolved.
+Open Visual Studio Installer, repair Build Tools 2022, and enable:
   Desktop development with C++
 '@
   }
 
   Write-Host "MSVC Build Tools: $installationPath"
+  Initialize-MsvcEnvironment -InstallationPath $installationPath
+}
+
+function Initialize-MsvcEnvironment {
+  param([Parameter(Mandatory = $true)][string]$InstallationPath)
+
+  $vsDevCmd = Join-Path $InstallationPath 'Common7\Tools\VsDevCmd.bat'
+  if (-not (Test-Path $vsDevCmd)) {
+    throw "VsDevCmd.bat was not found at $vsDevCmd"
+  }
+
+  Write-Step 'Loading the MSVC build environment'
+  $environmentLines = & cmd.exe /s /c "`"$vsDevCmd`" -arch=x64 -host_arch=x64 >nul && set"
+  Assert-LastExitCode 'VsDevCmd.bat'
+
+  foreach ($line in $environmentLines) {
+    if ($line -match '^(.*?)=(.*)$') {
+      Set-Item -Path "Env:$($matches[1])" -Value $matches[2]
+    }
+  }
+
+  if (-not (Get-Command link.exe -ErrorAction SilentlyContinue)) {
+    throw 'MSVC linker link.exe is not visible after loading the build environment.'
+  }
+
+  Add-WindowsSdkLibraryPaths
+}
+
+function Add-WindowsSdkLibraryPaths {
+  $programFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
+  $sdkRoot = Join-Path $programFilesX86 'Windows Kits\10'
+  $libRoot = Join-Path $sdkRoot 'Lib'
+  if (-not (Test-Path $libRoot)) {
+    throw 'Windows SDK libraries were not found. Install a Windows 10/11 SDK component.'
+  }
+
+  $sdkVersion = Get-ChildItem -LiteralPath $libRoot -Directory |
+    Sort-Object Name -Descending |
+    Select-Object -First 1
+  if (-not $sdkVersion) {
+    throw 'No Windows SDK library version was found.'
+  }
+
+  $libraryPaths = @(
+    (Join-Path $sdkVersion.FullName 'um\x64'),
+    (Join-Path $sdkVersion.FullName 'ucrt\x64'),
+    (Join-Path $sdkRoot 'Debuggers\lib\x64')
+  ) | Where-Object { Test-Path $_ }
+
+  foreach ($libraryPath in $libraryPaths) {
+    if (-not ($env:LIB -split ';' | Where-Object { $_ -eq $libraryPath })) {
+      $env:LIB = "$libraryPath;$env:LIB"
+    }
+  }
+
+  $includeVersion = Join-Path $sdkRoot "Include\$($sdkVersion.Name)"
+  $includePaths = @(
+    (Join-Path $includeVersion 'um'),
+    (Join-Path $includeVersion 'shared'),
+    (Join-Path $includeVersion 'ucrt'),
+    (Join-Path $includeVersion 'winrt'),
+    (Join-Path $includeVersion 'cppwinrt')
+  ) | Where-Object { Test-Path $_ }
+
+  foreach ($includePath in $includePaths) {
+    if (-not ($env:INCLUDE -split ';' | Where-Object { $_ -eq $includePath })) {
+      $env:INCLUDE = "$includePath;$env:INCLUDE"
+    }
+  }
+
+  if (-not (Test-Path (Join-Path $sdkVersion.FullName 'um\x64\kernel32.lib'))) {
+    throw "kernel32.lib was not found in $($sdkVersion.FullName)"
+  }
+  if (-not (Test-Path (Join-Path $includeVersion 'um\windows.h'))) {
+    throw "windows.h was not found in $includeVersion"
+  }
+  if (-not (Test-Path (Join-Path $sdkRoot 'Debuggers\lib\x64\dbghelp.lib'))) {
+    throw 'dbghelp.lib was not found. Install Windows SDK Debugging Tools.'
+  }
 }
 
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null

@@ -58,7 +58,10 @@ struct BridgeState {
 }
 
 fn data_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    let directory = app.path().app_data_dir().map_err(|error| error.to_string())?;
+    let directory = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
     fs::create_dir_all(&directory).map_err(|error| error.to_string())?;
     Ok(directory)
 }
@@ -213,7 +216,9 @@ fn choose_allowed_root(
         return Ok(Some(existing.clone()));
     }
     if roots.len() >= MAX_ROOTS {
-        return Err(format!("A maximum of {MAX_ROOTS} allowed roots is supported"));
+        return Err(format!(
+            "A maximum of {MAX_ROOTS} allowed roots is supported"
+        ));
     }
     let label = canonical
         .file_name()
@@ -276,7 +281,7 @@ fn list_directory(
     root_id: Uuid,
     relative_path: String,
 ) -> Result<Vec<FileEntry>, String> {
-    let result = (|| {
+    let result: Result<Vec<FileEntry>, String> = (|| {
         let root = find_root(&state, root_id)?;
         let target = resolve_target(&root, &relative_path)?;
         if !target.is_dir() {
@@ -341,7 +346,7 @@ fn read_text_file(
     relative_path: String,
     max_bytes: Option<u64>,
 ) -> Result<String, String> {
-    let result = (|| {
+    let result: Result<String, String> = (|| {
         let root = find_root(&state, root_id)?;
         let target = resolve_target(&root, &relative_path)?;
         if !target.is_file() {
@@ -395,7 +400,7 @@ fn search_files(
     query: String,
     max_results: Option<usize>,
 ) -> Result<Vec<FileEntry>, String> {
-    let result = (|| {
+    let result: Result<Vec<FileEntry>, String> = (|| {
         let normalized_query = query.trim().to_lowercase();
         if normalized_query.len() < 2 {
             return Err("Search query must contain at least two characters".into());
@@ -457,6 +462,76 @@ fn search_files(
         ),
     }
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_root(path: PathBuf) -> AllowedRoot {
+        AllowedRoot {
+            id: Uuid::new_v4(),
+            path,
+            label: "test-root".to_string(),
+            created_at: Utc::now(),
+        }
+    }
+
+    fn temp_case(name: &str) -> PathBuf {
+        let path = std::env::temp_dir().join(format!(
+            "cybertools-desktop-bridge-{name}-{}",
+            Uuid::new_v4()
+        ));
+        fs::create_dir_all(&path).expect("create temp root");
+        path
+    }
+
+    #[test]
+    fn rejects_traversal_and_absolute_paths() {
+        assert!(validate_relative_path("../secret.txt").is_err());
+        assert!(validate_relative_path("safe/../../secret.txt").is_err());
+        assert!(validate_relative_path(r"C:\Windows\win.ini").is_err());
+        assert!(validate_relative_path(r"\Windows\win.ini").is_err());
+    }
+
+    #[test]
+    fn resolves_files_inside_allowed_root() {
+        let root_path = temp_case("inside");
+        let nested = root_path.join("nested");
+        fs::create_dir_all(&nested).expect("create nested directory");
+        fs::write(nested.join("note.txt"), "hello").expect("write fixture");
+
+        let root = test_root(root_path.clone());
+        let resolved = resolve_target(&root, "nested/note.txt").expect("resolve target");
+
+        assert_eq!(
+            resolved,
+            fs::canonicalize(nested.join("note.txt")).expect("canonical fixture")
+        );
+        fs::remove_dir_all(root_path).expect("cleanup temp root");
+    }
+
+    #[test]
+    fn rejects_symlink_components_when_supported() {
+        let root_path = temp_case("symlink");
+        let outside_path = temp_case("outside");
+        let outside_file = outside_path.join("secret.txt");
+        fs::write(&outside_file, "secret").expect("write outside fixture");
+        let link_path = root_path.join("link.txt");
+
+        #[cfg(windows)]
+        let symlink_result = std::os::windows::fs::symlink_file(&outside_file, &link_path);
+        #[cfg(unix)]
+        let symlink_result = std::os::unix::fs::symlink(&outside_file, &link_path);
+
+        if symlink_result.is_ok() {
+            let root = test_root(root_path.clone());
+            assert!(resolve_target(&root, "link.txt").is_err());
+        }
+
+        fs::remove_dir_all(root_path).expect("cleanup root");
+        fs::remove_dir_all(outside_path).expect("cleanup outside");
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
