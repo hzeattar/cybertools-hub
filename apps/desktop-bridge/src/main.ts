@@ -53,68 +53,169 @@ if (!app) {
 }
 
 app.innerHTML = `
-  <section class="shell">
-    <header>
-      <div>
-        <p class="eyebrow">CyberTools Local Companion</p>
-        <h1>Desktop Bridge</h1>
-        <p class="subtitle">Read-only local file access with explicit folder permissions.</p>
+  <main class="app-shell">
+    <aside class="sidebar" aria-label="CyberTools navigation">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">CT</span>
+        <div>
+          <strong>CyberTools</strong>
+          <span>Local Bridge</span>
+        </div>
       </div>
-      <span id="status" class="status">Loading…</span>
-    </header>
-
-    <section class="notice">
-      <strong>Safe foundation mode</strong>
-      <span>No write, delete, shell, process, or network access is enabled.</span>
-    </section>
-
-    <section class="pairing-panel">
-      <div class="pairing-copy">
-        <h2>Pairing</h2>
-        <p>Loopback-only dry confirmation for read-only filesystem capabilities.</p>
+      <nav class="nav-list">
+        <button class="nav-item active" type="button">
+          <span class="nav-icon" aria-hidden="true">01</span>
+          Workspace
+        </button>
+        <button class="nav-item" type="button">
+          <span class="nav-icon" aria-hidden="true">02</span>
+          Pairing
+        </button>
+        <button class="nav-item" type="button">
+          <span class="nav-icon" aria-hidden="true">03</span>
+          Audit
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="lock-dot" aria-hidden="true"></span>
+        <div>
+          <strong>Read-only mode</strong>
+          <span>No shell, process, delete, or write access.</span>
+        </div>
       </div>
-      <div class="pairing-actions">
-        <button id="create-pairing" type="button">Create code</button>
-        <button id="confirm-pairing" class="secondary" type="button" disabled>Confirm loopback</button>
-        <button id="revoke-pairing" class="danger" type="button" disabled>Revoke session</button>
-      </div>
-      <div id="pairing-state" class="pairing-state"></div>
-    </section>
+    </aside>
 
-    <section class="controls">
-      <button id="add-root" type="button">Choose allowed folder</button>
-      <input id="search" type="search" placeholder="Search filenames in selected root" />
-    </section>
+    <section class="content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Desktop companion</p>
+          <h1>Connect local files to CyberTools safely.</h1>
+        </div>
+        <div class="topbar-actions">
+          <button id="add-root-top" class="primary" type="button">Allow folder</button>
+          <span id="status" class="status-pill">Starting</span>
+        </div>
+      </header>
 
-    <section class="workspace">
-      <aside>
-        <h2>Allowed folders</h2>
-        <div id="roots" class="list"></div>
-      </aside>
-      <article>
-        <div class="article-header">
-          <h2 id="current-title">Select an allowed folder</h2>
-          <div class="article-actions">
-            <button id="revoke-root" class="danger" type="button" disabled>Revoke access</button>
-            <button id="up" class="secondary" type="button" disabled>Up</button>
+      <section class="overview-grid" aria-label="Connection overview">
+        <article class="metric-card">
+          <span class="metric-label">Access</span>
+          <strong id="access-mode">Read-only</strong>
+          <small>Only folders you approve are visible.</small>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Folders</span>
+          <strong id="folder-count">0</strong>
+          <small>Allowed workspace roots.</small>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Network</span>
+          <strong id="network-mode">Off</strong>
+          <small>Pairing is loopback-only dry confirmation.</small>
+        </article>
+      </section>
+
+      <section class="setup-strip" aria-label="Setup flow">
+        <div class="setup-step complete">
+          <span>1</span>
+          <div>
+            <strong>Choose folder</strong>
+            <small>Grant a local workspace root.</small>
           </div>
         </div>
-        <div id="entries" class="list"></div>
-        <pre id="preview" hidden></pre>
-      </article>
-    </section>
+        <div class="setup-step">
+          <span>2</span>
+          <div>
+            <strong>Browse files</strong>
+            <small>Preview text files locally.</small>
+          </div>
+        </div>
+        <div class="setup-step">
+          <span>3</span>
+          <div>
+            <strong>Pair later</strong>
+            <small>Confirm the fingerprint before web use.</small>
+          </div>
+        </div>
+      </section>
 
-    <p id="error" class="error" role="alert"></p>
-  </section>
+      <section class="pairing-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Secure pairing</p>
+            <h2>Web connection approval</h2>
+          </div>
+          <div class="button-row">
+            <button id="create-pairing" class="secondary" type="button">Create code</button>
+            <button id="confirm-pairing" class="secondary" type="button" disabled>Dry confirm</button>
+            <button id="revoke-pairing" class="danger" type="button" disabled>Revoke</button>
+          </div>
+        </div>
+        <div id="pairing-state" class="pairing-state"></div>
+      </section>
+
+      <section class="file-workspace">
+        <aside class="roots-pane">
+          <div class="pane-heading">
+            <div>
+              <p class="eyebrow">Allowed roots</p>
+              <h2>Local workspaces</h2>
+            </div>
+            <button id="add-root" class="icon-button" type="button" aria-label="Allow folder" title="Allow folder">+</button>
+          </div>
+          <div id="roots" class="root-list"></div>
+        </aside>
+
+        <article class="browser-pane">
+          <div class="browser-toolbar">
+            <div>
+              <p class="eyebrow">File browser</p>
+              <h2 id="current-title">Select a workspace</h2>
+            </div>
+            <div class="toolbar-actions">
+              <button id="up" class="icon-button" type="button" aria-label="Go up" title="Go up" disabled>Up</button>
+              <button id="revoke-root" class="danger" type="button" disabled>Remove access</button>
+            </div>
+          </div>
+          <div class="search-bar">
+            <input id="search" type="search" placeholder="Search selected workspace files" />
+          </div>
+          <div id="entries" class="entries-table" role="table" aria-label="Files"></div>
+        </article>
+
+        <aside class="preview-pane">
+          <div class="pane-heading">
+            <div>
+              <p class="eyebrow">Preview</p>
+              <h2 id="preview-title">No file selected</h2>
+            </div>
+          </div>
+          <pre id="preview" hidden></pre>
+          <div id="preview-empty" class="empty-state">
+            <strong>Pick a text file</strong>
+            <span>Content is read locally and never written back.</span>
+          </div>
+        </aside>
+      </section>
+
+      <p id="error" class="error" role="alert"></p>
+    </section>
+  </main>
 `;
 
 const statusEl = document.querySelector<HTMLElement>('#status')!;
+const accessModeEl = document.querySelector<HTMLElement>('#access-mode')!;
+const folderCountEl = document.querySelector<HTMLElement>('#folder-count')!;
+const networkModeEl = document.querySelector<HTMLElement>('#network-mode')!;
 const rootsEl = document.querySelector<HTMLElement>('#roots')!;
 const entriesEl = document.querySelector<HTMLElement>('#entries')!;
 const previewEl = document.querySelector<HTMLPreElement>('#preview')!;
+const previewEmptyEl = document.querySelector<HTMLElement>('#preview-empty')!;
+const previewTitleEl = document.querySelector<HTMLElement>('#preview-title')!;
 const errorEl = document.querySelector<HTMLElement>('#error')!;
 const titleEl = document.querySelector<HTMLElement>('#current-title')!;
 const addRootButton = document.querySelector<HTMLButtonElement>('#add-root')!;
+const addRootTopButton = document.querySelector<HTMLButtonElement>('#add-root-top')!;
 const revokeRootButton = document.querySelector<HTMLButtonElement>('#revoke-root')!;
 const upButton = document.querySelector<HTMLButtonElement>('#up')!;
 const searchInput = document.querySelector<HTMLInputElement>('#search')!;
@@ -130,26 +231,6 @@ let searchTimer: number | undefined;
 let activeOffer: PairingOffer | null = null;
 let activeSession: PairingSession | null = null;
 
-function showError(error: unknown) {
-  errorEl.textContent = error instanceof Error ? error.message : String(error);
-}
-
-function clearError() {
-  errorEl.textContent = '';
-}
-
-function resetSelection() {
-  selectedRoot = null;
-  currentRelativePath = '';
-  titleEl.textContent = 'Select an allowed folder';
-  entriesEl.innerHTML = '<p class="empty">Choose a folder to browse its files.</p>';
-  previewEl.hidden = true;
-  previewEl.textContent = '';
-  searchInput.value = '';
-  revokeRootButton.disabled = true;
-  upButton.disabled = true;
-}
-
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (character) => {
     const entities: Record<string, string> = {
@@ -163,14 +244,62 @@ function escapeHtml(value: string) {
   });
 }
 
-async function loadStatus() {
-  const status = await invoke<BridgeStatus>('bridge_status');
-  statusEl.textContent = status.read_only ? 'Read-only' : 'Restricted';
-  statusEl.title = `Version ${status.version}; roots: ${status.allowed_root_count}`;
-}
-
 function formatDate(value: string) {
   return new Date(value).toLocaleString();
+}
+
+function formatSize(value: number | null) {
+  if (value === null) {
+    return '';
+  }
+  if (value < 1024) {
+    return `${value} B`;
+  }
+  if (value < 1024 * 1024) {
+    return `${(value / 1024).toFixed(1)} KB`;
+  }
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function showError(error: unknown) {
+  errorEl.textContent = error instanceof Error ? error.message : String(error);
+}
+
+function clearError() {
+  errorEl.textContent = '';
+}
+
+function clearPreview() {
+  previewTitleEl.textContent = 'No file selected';
+  previewEl.hidden = true;
+  previewEl.textContent = '';
+  previewEmptyEl.hidden = false;
+}
+
+function resetSelection() {
+  selectedRoot = null;
+  currentRelativePath = '';
+  titleEl.textContent = 'Select a workspace';
+  entriesEl.innerHTML = `
+    <div class="empty-state wide">
+      <strong>No workspace selected</strong>
+      <span>Use Allow folder to choose a project folder, then browse files here.</span>
+    </div>
+  `;
+  searchInput.value = '';
+  searchInput.disabled = true;
+  revokeRootButton.disabled = true;
+  upButton.disabled = true;
+  clearPreview();
+}
+
+async function loadStatus() {
+  const status = await invoke<BridgeStatus>('bridge_status');
+  statusEl.textContent = status.read_only ? 'Protected' : 'Restricted';
+  statusEl.title = `Version ${status.version}; roots: ${status.allowed_root_count}`;
+  accessModeEl.textContent = status.read_only ? 'Read-only' : 'Restricted';
+  folderCountEl.textContent = String(status.allowed_root_count);
+  networkModeEl.textContent = status.network_enabled ? 'Limited' : 'Off';
 }
 
 function renderPairing() {
@@ -179,11 +308,16 @@ function renderPairing() {
 
   if (activeSession) {
     pairingStateEl.innerHTML = `
-      <div class="pairing-card active">
-        <strong>Session active</strong>
-        <span>Fingerprint ${escapeHtml(activeSession.confirmation_fingerprint)}</span>
-        <small>Expires ${escapeHtml(formatDate(activeSession.expires_at))}</small>
-        <small>Capabilities: ${activeSession.capabilities.map(escapeHtml).join(', ')}</small>
+      <div class="pairing-details active">
+        <div>
+          <span class="state-dot"></span>
+          <strong>Session active</strong>
+        </div>
+        <dl>
+          <div><dt>Fingerprint</dt><dd>${escapeHtml(activeSession.confirmation_fingerprint)}</dd></div>
+          <div><dt>Expires</dt><dd>${escapeHtml(formatDate(activeSession.expires_at))}</dd></div>
+          <div><dt>Capabilities</dt><dd>${activeSession.capabilities.map(escapeHtml).join(', ')}</dd></div>
+        </dl>
       </div>
     `;
     return;
@@ -191,18 +325,28 @@ function renderPairing() {
 
   if (activeOffer) {
     pairingStateEl.innerHTML = `
-      <div class="pairing-card">
-        <strong class="pairing-code">${escapeHtml(activeOffer.pairing_code)}</strong>
-        <span>Fingerprint ${escapeHtml(activeOffer.confirmation_fingerprint)}</span>
-        <small>Expires ${escapeHtml(formatDate(activeOffer.expires_at))}</small>
-        <small>Transport: ${escapeHtml(activeOffer.transport)}</small>
-        <small>Allowed: ${activeOffer.capabilities.map(escapeHtml).join(', ')}</small>
+      <div class="pairing-details">
+        <div class="pairing-code-block">
+          <span>Pairing code</span>
+          <strong>${escapeHtml(activeOffer.pairing_code)}</strong>
+        </div>
+        <dl>
+          <div><dt>Fingerprint</dt><dd>${escapeHtml(activeOffer.confirmation_fingerprint)}</dd></div>
+          <div><dt>Expires</dt><dd>${escapeHtml(formatDate(activeOffer.expires_at))}</dd></div>
+          <div><dt>Transport</dt><dd>${escapeHtml(activeOffer.transport)}</dd></div>
+          <div><dt>Allowed</dt><dd>${activeOffer.capabilities.map(escapeHtml).join(', ')}</dd></div>
+        </dl>
       </div>
     `;
     return;
   }
 
-  pairingStateEl.innerHTML = '<p class="empty">No active pairing code.</p>';
+  pairingStateEl.innerHTML = `
+    <div class="empty-state inline">
+      <strong>No pairing session</strong>
+      <span>Create a code only when the web app asks to connect.</span>
+    </div>
+  `;
 }
 
 async function loadPairingStatus() {
@@ -217,25 +361,39 @@ async function loadRoots() {
   if (selectedRoot && !roots.some((root) => root.id === selectedRoot?.id)) {
     resetSelection();
   }
+
   rootsEl.innerHTML = '';
   for (const root of roots) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `list-item ${selectedRoot?.id === root.id ? 'selected' : ''}`;
-    button.innerHTML = `<strong>${escapeHtml(root.label)}</strong><small>${escapeHtml(root.path)}</small>`;
+    button.className = `root-item ${selectedRoot?.id === root.id ? 'selected' : ''}`;
+    button.innerHTML = `
+      <span class="folder-icon" aria-hidden="true"></span>
+      <span>
+        <strong>${escapeHtml(root.label)}</strong>
+        <small>${escapeHtml(root.path)}</small>
+      </span>
+    `;
     button.addEventListener('click', () => selectRoot(root));
     rootsEl.append(button);
   }
+
   if (roots.length === 0) {
-    rootsEl.innerHTML = '<p class="empty">No folder has been allowed yet.</p>';
+    rootsEl.innerHTML = `
+      <div class="empty-state">
+        <strong>No folders allowed</strong>
+        <span>Add one project folder to begin.</span>
+      </div>
+    `;
   }
 }
 
 async function selectRoot(root: AllowedRoot) {
   selectedRoot = root;
   currentRelativePath = '';
-  previewEl.hidden = true;
+  clearPreview();
   revokeRootButton.disabled = false;
+  searchInput.disabled = false;
   await loadRoots();
   await loadDirectory();
 }
@@ -246,11 +404,13 @@ async function loadDirectory() {
   }
   clearError();
   searchInput.value = '';
-  previewEl.hidden = true;
+  clearPreview();
+
   const entries = await invoke<FileEntry[]>('list_directory', {
     rootId: selectedRoot.id,
     relativePath: currentRelativePath,
   });
+
   renderEntries(entries);
   titleEl.textContent = currentRelativePath
     ? `${selectedRoot.label} / ${currentRelativePath}`
@@ -260,12 +420,39 @@ async function loadDirectory() {
 }
 
 function renderEntries(entries: FileEntry[]) {
-  entriesEl.innerHTML = '';
+  if (entries.length === 0) {
+    entriesEl.innerHTML = `
+      <div class="empty-state wide">
+        <strong>Nothing to show</strong>
+        <span>No readable files or folders were found here.</span>
+      </div>
+    `;
+    return;
+  }
+
+  entriesEl.innerHTML = `
+    <div class="table-head" role="row">
+      <span>Name</span>
+      <span>Type</span>
+      <span>Size</span>
+    </div>
+  `;
+
   for (const entry of entries) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'list-item';
-    button.innerHTML = `<strong>${entry.kind === 'directory' ? '📁' : '📄'} ${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.relative_path)}</small>`;
+    button.className = 'entry-row';
+    button.innerHTML = `
+      <span class="entry-name">
+        <span class="${entry.kind === 'directory' ? 'folder-icon' : 'file-icon'}" aria-hidden="true"></span>
+        <span>
+          <strong>${escapeHtml(entry.name)}</strong>
+          <small>${escapeHtml(entry.relative_path)}</small>
+        </span>
+      </span>
+      <span class="muted">${entry.kind === 'directory' ? 'Folder' : 'File'}</span>
+      <span class="muted">${escapeHtml(formatSize(entry.size))}</span>
+    `;
     button.addEventListener('click', async () => {
       if (!selectedRoot) {
         return;
@@ -282,20 +469,19 @@ function renderEntries(entries: FileEntry[]) {
           relativePath: entry.relative_path,
           maxBytes: 512_000,
         });
+        previewTitleEl.textContent = entry.name;
         previewEl.textContent = content;
         previewEl.hidden = false;
+        previewEmptyEl.hidden = true;
       } catch (error) {
         showError(error);
       }
     });
     entriesEl.append(button);
   }
-  if (entries.length === 0) {
-    entriesEl.innerHTML = '<p class="empty">No readable entries found.</p>';
-  }
 }
 
-addRootButton.addEventListener('click', async () => {
+async function addAllowedRoot() {
   try {
     clearError();
     const added = await invoke<AllowedRoot | null>('choose_allowed_root');
@@ -303,13 +489,17 @@ addRootButton.addEventListener('click', async () => {
       selectedRoot = added;
       currentRelativePath = '';
       revokeRootButton.disabled = false;
+      searchInput.disabled = false;
       await Promise.all([loadStatus(), loadRoots()]);
       await loadDirectory();
     }
   } catch (error) {
     showError(error);
   }
-});
+}
+
+addRootButton.addEventListener('click', addAllowedRoot);
+addRootTopButton.addEventListener('click', addAllowedRoot);
 
 createPairingButton.addEventListener('click', async () => {
   try {
@@ -356,7 +546,7 @@ revokeRootButton.addEventListener('click', async () => {
   if (!selectedRoot) {
     return;
   }
-  const approved = window.confirm(`Revoke CyberTools access to "${selectedRoot.label}"?`);
+  const approved = window.confirm(`Remove CyberTools access to "${selectedRoot.label}"?`);
   if (!approved) {
     return;
   }
@@ -388,7 +578,7 @@ searchInput.addEventListener('input', () => {
     }
     try {
       clearError();
-      previewEl.hidden = true;
+      clearPreview();
       const entries = await invoke<FileEntry[]>('search_files', {
         rootId: selectedRoot.id,
         query,
