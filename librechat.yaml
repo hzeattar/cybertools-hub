@@ -49,6 +49,20 @@ endpoints:
     minRelevanceScore: 0.45
     capabilities: ['deferred_tools', 'execute_code', 'file_search', 'actions', 'tools']
   custom:
+    # CyberTools Ollama is intentionally disabled in production until the
+    # environment receives a rotated OLLAMA_API_KEY and the block is reviewed.
+    # - name: 'CyberTools Ollama'
+    #   apiKey: '${OLLAMA_API_KEY}'
+    #   baseURL: 'https://ollama.com/v1'
+    #   models:
+    #     default:
+    #       - '${CYBERTOOLS_DEFAULT_MODEL}'
+    #     fetch: true
+    #   titleConvo: false
+    #   summarize: false
+    #   dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
+    #   modelDisplayLabel: 'CyberTools Ollama'
+
     - name: 'AgentRouter'
       apiKey: '${AGENTROUTER_API_KEY}'
       baseURL: 'https://agentrouter.org/v1'
