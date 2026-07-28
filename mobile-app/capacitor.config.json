@@ -3,7 +3,7 @@
   "appName": "Cybertools Hub",
   "webDir": "www",
   "server": {
-    "url": "https://your-librechat-domain.example.com",
+    "url": "https://librechat-production-bd64.up.railway.app",
     "cleartext": false,
     "androidScheme": "https"
   }
