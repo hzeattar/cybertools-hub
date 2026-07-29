@@ -54,12 +54,11 @@ endpoints:
       baseURL: '${NVIDIA_BASE_URL}'
       models:
         default:
-          - '${NVIDIA_DEFAULT_MODEL}'
           - 'meta/llama-3.1-70b-instruct'
           - 'nvidia/llama-3.1-nemotron-ultra-253b-v1'
           - 'meta/llama-3.1-405b-instruct'
           - 'mistralai/mistral-nemotron'
-        fetch: true
+        fetch: false
       titleConvo: true
       summarize: true
       dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
@@ -125,7 +124,7 @@ modelSpecs:
       default: true
       preset:
         endpoint: 'CyberTools NVIDIA NIM'
-        model: '${NVIDIA_DEFAULT_MODEL}'
+        model: 'meta/llama-3.1-70b-instruct'
         instructions: |
           # Identity
           You are CyberTools AI, a senior-level assistant for software engineering, DevOps/server administration, business & trading analysis, cybersecurity (defensive), and document research/RAG-based Q&A.
@@ -195,7 +194,7 @@ modelSpecs:
       description: 'Legal, authorized offensive-security assistant. Use only on approved platforms and systems you own or have explicit written permission to test.'
       preset:
         endpoint: 'CyberTools NVIDIA NIM'
-        model: '${NVIDIA_DEFAULT_MODEL}'
+        model: 'meta/llama-3.1-70b-instruct'
         instructions: |
           # Identity
           You are CyberTools Authorized Pentester, an ethical security-testing assistant operated by CyberTools AI.
@@ -239,7 +238,7 @@ modelSpecs:
       description: 'Senior full-stack code reviewer. Reviews PHP/Laravel, Vue, Python, Node.js, React, SQL, Docker, and CI/CD configs for bugs, security, performance, and maintainability.'
       preset:
         endpoint: 'CyberTools NVIDIA NIM'
-        model: '${NVIDIA_DEFAULT_MODEL}'
+        model: 'meta/llama-3.1-70b-instruct'
         instructions: |
           # Identity
           You are CyberTools Code Reviewer, a senior full-stack engineer and security reviewer.
@@ -272,7 +271,7 @@ modelSpecs:
       description: 'Analyzes sales data, financial indicators, KPIs, and market trends. Builds clear reports and actionable recommendations.'
       preset:
         endpoint: 'CyberTools NVIDIA NIM'
-        model: '${NVIDIA_DEFAULT_MODEL}'
+        model: 'meta/llama-3.1-70b-instruct'
         instructions: |
           # Identity
           You are CyberTools Business Analyst, a specialist in sales analytics, financial indicators, and business intelligence.
@@ -299,7 +298,7 @@ modelSpecs:
       description: 'Monitors Railway deployments, service health, logs, and infrastructure. Helps diagnose incidents and suggests safe fixes.'
       preset:
         endpoint: 'CyberTools NVIDIA NIM'
-        model: '${NVIDIA_DEFAULT_MODEL}'
+        model: 'meta/llama-3.1-70b-instruct'
         instructions: |
           # Identity
           You are CyberTools DevOps Monitor, an SRE/DevOps assistant focused on observability, incident response, and infrastructure health.
@@ -357,6 +356,18 @@ actions:
 fileConfig:
   endpoints:
     default:
+      fileLimit: 20
+      fileSizeLimit: 512
+      totalSizeLimit: 1024
+      supportedMimeTypes:
+        - '.*'
+    custom:
+      fileLimit: 20
+      fileSizeLimit: 512
+      totalSizeLimit: 1024
+      supportedMimeTypes:
+        - '.*'
+    CyberTools NVIDIA NIM:
       fileLimit: 20
       fileSizeLimit: 512
       totalSizeLimit: 1024
