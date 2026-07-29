@@ -55,9 +55,6 @@ endpoints:
       models:
         default:
           - 'meta/llama-3.1-70b-instruct'
-          - 'nvidia/llama-3.1-nemotron-ultra-253b-v1'
-          - 'meta/llama-3.1-405b-instruct'
-          - 'mistralai/mistral-nemotron'
         fetch: false
       titleConvo: true
       summarize: true
@@ -109,6 +106,8 @@ endpoints:
 modelSpecs:
   list:
     - name: 'cybertools-openrouter-free'
+      webSearch: true
+      fileSearch: true
       label: 'CyberTools AI — Free (Stable Fallback)'
       description: 'Fallback provider only. Use when NVIDIA NIM is unavailable.'
       preset:
@@ -119,6 +118,8 @@ modelSpecs:
           Give concrete, well-structured answers in the user's language. Use attached files and web sources when available, cite them, state uncertainty, and never invent tool results or credentials.
 
     - name: 'cybertools-nvidia-nim'
+      webSearch: true
+      fileSearch: true
       label: 'CyberTools AI — Nemotron High Intelligence'
       description: 'Primary CyberTools assistant using NVIDIA NIM through the official OpenAI-compatible endpoint.'
       default: true
@@ -146,11 +147,13 @@ modelSpecs:
           # Language & tone
           - Reply in the same language the user writes in (Arabic or English), matching their register (formal/informal).
           - Be direct and efficient. Lead with the answer, then supporting detail if needed.
-          - For current or changing facts, use Web Search when available and identify the source date.
+          - For current or changing facts, places, prices, news, public/company facts, product availability, technical docs, or recommendations, use Web Search first and identify source dates.
           - For questions about attached documents, use File Search first and cite the relevant file.
           - Before presenting code or infrastructure changes, check assumptions, preserve secrets, and include a concise verification step.
 
     - name: 'cybertools-main'
+      webSearch: true
+      fileSearch: true
       label: 'CyberTools AI — AgentRouter GPT-5.5'
       description: 'Primary production assistant using the AgentRouter account connected to agentrouter.org. Requires a valid, non-expired AGENTROUTER_API_KEY.'
       preset:
@@ -190,6 +193,8 @@ modelSpecs:
         model: 'glm-5.2'
 
     - name: 'cybertools-authorized-pentester'
+      webSearch: true
+      fileSearch: true
       label: 'CyberTools Authorized Pentester'
       description: 'Legal, authorized offensive-security assistant. Use only on approved platforms and systems you own or have explicit written permission to test.'
       preset:
@@ -234,6 +239,8 @@ modelSpecs:
           - If a request is ambiguous, ask one clarifying question: which target/platform, and do you have authorization?
 
     - name: 'cybertools-code-reviewer'
+      webSearch: true
+      fileSearch: true
       label: 'CyberTools Code Reviewer'
       description: 'Senior full-stack code reviewer. Reviews PHP/Laravel, Vue, Python, Node.js, React, SQL, Docker, and CI/CD configs for bugs, security, performance, and maintainability.'
       preset:
@@ -267,6 +274,8 @@ modelSpecs:
           Reply in the user's language (Arabic or English). Be concise but thorough.
 
     - name: 'cybertools-business-analyst'
+      webSearch: true
+      fileSearch: true
       label: 'CyberTools Business Analyst'
       description: 'Analyzes sales data, financial indicators, KPIs, and market trends. Builds clear reports and actionable recommendations.'
       preset:
@@ -294,6 +303,8 @@ modelSpecs:
           Reply in the user's language (Arabic or English).
 
     - name: 'cybertools-devops-monitor'
+      webSearch: true
+      fileSearch: true
       label: 'CyberTools DevOps Monitor'
       description: 'Monitors Railway deployments, service health, logs, and infrastructure. Helps diagnose incidents and suggests safe fixes.'
       preset:
@@ -356,24 +367,28 @@ actions:
 fileConfig:
   endpoints:
     default:
+      disabled: false
       fileLimit: 20
       fileSizeLimit: 512
       totalSizeLimit: 1024
       supportedMimeTypes:
         - '.*'
     custom:
+      disabled: false
       fileLimit: 20
       fileSizeLimit: 512
       totalSizeLimit: 1024
       supportedMimeTypes:
         - '.*'
     CyberTools NVIDIA NIM:
+      disabled: false
       fileLimit: 20
       fileSizeLimit: 512
       totalSizeLimit: 1024
       supportedMimeTypes:
         - '.*'
     agents:
+      disabled: false
       fileLimit: 20
       fileSizeLimit: 512
       totalSizeLimit: 1024

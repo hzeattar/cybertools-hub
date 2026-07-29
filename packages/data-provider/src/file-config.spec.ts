@@ -265,6 +265,37 @@ describe('getEndpointFileConfig', () => {
       expect(result.fileLimit).toBe(7);
     });
 
+    it('should enable files for the CyberTools NVIDIA NIM custom endpoint by direct display name', () => {
+      const fileConfig: FileConfig = {
+        ...baseFileConfig,
+        endpoints: {
+          ...baseFileConfig.endpoints,
+          [EModelEndpoint.custom]: {
+            disabled: true,
+            fileLimit: 1,
+          },
+          'CyberTools NVIDIA NIM': {
+            disabled: false,
+            fileLimit: 20,
+            fileSizeLimit: 512,
+            totalSizeLimit: 1024,
+            supportedMimeTypes: [/./],
+          },
+        },
+      };
+
+      const result = getEndpointFileConfig({
+        fileConfig,
+        endpoint: 'CyberTools NVIDIA NIM',
+        endpointType: EModelEndpoint.custom,
+      });
+
+      expect(result.disabled).toBe(false);
+      expect(result.fileLimit).toBe(20);
+      expect(result.fileSizeLimit).toBe(512);
+      expect(result.totalSizeLimit).toBe(1024);
+    });
+
     it('should fallback to generic custom config when specific endpoint not found', () => {
       const fileConfig: FileConfig = {
         ...baseFileConfig,
