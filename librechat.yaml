@@ -49,6 +49,21 @@ endpoints:
     minRelevanceScore: 0.45
     capabilities: ['deferred_tools', 'execute_code', 'file_search', 'actions', 'tools']
   custom:
+    - name: 'CyberTools NVIDIA NIM'
+      apiKey: '${NVIDIA_API_KEY}'
+      baseURL: '${NVIDIA_BASE_URL}'
+      models:
+        default:
+          - '${NVIDIA_DEFAULT_MODEL}'
+          - 'nvidia/llama-3.1-nemotron-ultra-253b-v1'
+          - 'meta/llama-3.1-405b-instruct'
+          - 'meta/llama-3.1-70b-instruct'
+        fetch: true
+      titleConvo: true
+      summarize: true
+      dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
+      modelDisplayLabel: 'CyberTools NVIDIA NIM'
+
     # CyberTools Ollama is intentionally disabled in production until the
     # environment receives a rotated OLLAMA_API_KEY and the block is reviewed.
     # - name: 'CyberTools Ollama'
@@ -95,7 +110,7 @@ modelSpecs:
   list:
     - name: 'cybertools-openrouter-free'
       label: 'CyberTools AI — Free (Stable Fallback)'
-      description: 'Stable free fallback using the explicitly selected OpenRouter model. Use when the primary model is unavailable.'
+      description: 'Fallback provider only. Use when NVIDIA NIM is unavailable.'
       preset:
         endpoint: 'OpenRouter Free'
         model: 'openai/gpt-oss-20b:free'
@@ -103,13 +118,13 @@ modelSpecs:
           You are CyberTools AI, a precise senior assistant for engineering, DevOps, business analysis, defensive cybersecurity, and document research.
           Give concrete, well-structured answers in the user's language. Use attached files and web sources when available, cite them, state uncertainty, and never invent tool results or credentials.
 
-    - name: 'cybertools-openrouter-nemotron'
+    - name: 'cybertools-nvidia-nim'
       label: 'CyberTools AI — Nemotron High Intelligence'
-      description: 'Higher-capacity OpenRouter option. Currently available and tested as the primary default.'
+      description: 'Primary CyberTools assistant using NVIDIA NIM through the official OpenAI-compatible endpoint.'
       default: true
       preset:
-        endpoint: 'OpenRouter Free'
-        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
+        endpoint: 'CyberTools NVIDIA NIM'
+        model: '${NVIDIA_DEFAULT_MODEL}'
         instructions: |
           # Identity
           You are CyberTools AI, a senior-level assistant for software engineering, DevOps/server administration, business & trading analysis, cybersecurity (defensive), and document research/RAG-based Q&A.
@@ -178,8 +193,8 @@ modelSpecs:
       label: 'CyberTools Authorized Pentester'
       description: 'Legal, authorized offensive-security assistant. Use only on approved platforms and systems you own or have explicit written permission to test.'
       preset:
-        endpoint: 'OpenRouter Free'
-        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
+        endpoint: 'CyberTools NVIDIA NIM'
+        model: '${NVIDIA_DEFAULT_MODEL}'
         instructions: |
           # Identity
           You are CyberTools Authorized Pentester, an ethical security-testing assistant operated by CyberTools AI.
@@ -222,8 +237,8 @@ modelSpecs:
       label: 'CyberTools Code Reviewer'
       description: 'Senior full-stack code reviewer. Reviews PHP/Laravel, Vue, Python, Node.js, React, SQL, Docker, and CI/CD configs for bugs, security, performance, and maintainability.'
       preset:
-        endpoint: 'OpenRouter Free'
-        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
+        endpoint: 'CyberTools NVIDIA NIM'
+        model: '${NVIDIA_DEFAULT_MODEL}'
         instructions: |
           # Identity
           You are CyberTools Code Reviewer, a senior full-stack engineer and security reviewer.
@@ -255,8 +270,8 @@ modelSpecs:
       label: 'CyberTools Business Analyst'
       description: 'Analyzes sales data, financial indicators, KPIs, and market trends. Builds clear reports and actionable recommendations.'
       preset:
-        endpoint: 'OpenRouter Free'
-        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
+        endpoint: 'CyberTools NVIDIA NIM'
+        model: '${NVIDIA_DEFAULT_MODEL}'
         instructions: |
           # Identity
           You are CyberTools Business Analyst, a specialist in sales analytics, financial indicators, and business intelligence.
@@ -282,8 +297,8 @@ modelSpecs:
       label: 'CyberTools DevOps Monitor'
       description: 'Monitors Railway deployments, service health, logs, and infrastructure. Helps diagnose incidents and suggests safe fixes.'
       preset:
-        endpoint: 'OpenRouter Free'
-        model: 'nvidia/nemotron-3-ultra-550b-a55b:free'
+        endpoint: 'CyberTools NVIDIA NIM'
+        model: '${NVIDIA_DEFAULT_MODEL}'
         instructions: |
           # Identity
           You are CyberTools DevOps Monitor, an SRE/DevOps assistant focused on observability, incident response, and infrastructure health.
