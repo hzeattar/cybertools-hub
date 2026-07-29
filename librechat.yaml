@@ -49,6 +49,21 @@ endpoints:
     minRelevanceScore: 0.45
     capabilities: ['deferred_tools', 'execute_code', 'file_search', 'actions', 'tools']
   custom:
+    - name: 'CyberTools NVIDIA NIM'
+      apiKey: '${NVIDIA_API_KEY}'
+      baseURL: '${NVIDIA_BASE_URL}'
+      models:
+        default:
+          - '${NVIDIA_DEFAULT_MODEL}'
+          - 'nvidia/llama-3.1-nemotron-ultra-253b-v1'
+          - 'meta/llama-3.1-405b-instruct'
+          - 'meta/llama-3.1-70b-instruct'
+        fetch: true
+      titleConvo: true
+      summarize: true
+      dropParams: ['stop', 'user', 'frequency_penalty', 'presence_penalty']
+      modelDisplayLabel: 'CyberTools NVIDIA NIM'
+
     # CyberTools Ollama is intentionally disabled in production until the
     # environment receives a rotated OLLAMA_API_KEY and the block is reviewed.
     # - name: 'CyberTools Ollama'
