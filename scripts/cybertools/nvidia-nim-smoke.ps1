@@ -1,6 +1,7 @@
 param(
     [string]$BaseUrl = $env:NVIDIA_BASE_URL,
-    [string]$Model = $env:NVIDIA_DEFAULT_MODEL
+    [string]$Model = $env:NVIDIA_DEFAULT_MODEL,
+    [switch]$ListModels
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,6 +25,12 @@ $modelIds = @($models.data | ForEach-Object { $_.id } | Where-Object { -not [str
 
 if ($modelIds.Count -eq 0) {
     throw "NVIDIA NIM reachable at $BaseUrl, but no model ids were returned."
+}
+
+if ($ListModels) {
+    Write-Host "NVIDIA NIM reachable. Models returned: $($modelIds.Count)"
+    $modelIds | Select-Object -First 50
+    exit 0
 }
 
 if ([string]::IsNullOrWhiteSpace($Model)) {
