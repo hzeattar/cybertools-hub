@@ -16,7 +16,7 @@ Set these in Railway or local `.env` only:
 ```env
 NVIDIA_API_KEY=
 NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
-NVIDIA_DEFAULT_MODEL=nvidia/llama-3.1-nemotron-ultra-253b-v1
+NVIDIA_DEFAULT_MODEL=meta/llama-3.1-70b-instruct
 ```
 
 Do not commit values for any API key. Rotate any key that was pasted into chat, screenshots, issues, or logs.
@@ -28,7 +28,7 @@ From PowerShell:
 ```powershell
 $env:NVIDIA_API_KEY = Read-Host 'NVIDIA API key'
 $env:NVIDIA_BASE_URL='https://integrate.api.nvidia.com/v1'
-$env:NVIDIA_DEFAULT_MODEL='nvidia/llama-3.1-nemotron-ultra-253b-v1'
+$env:NVIDIA_DEFAULT_MODEL='meta/llama-3.1-70b-instruct'
 .\scripts\cybertools\nvidia-nim-smoke.ps1
 ```
 

@@ -35,9 +35,10 @@ if ($ListModels) {
 
 if ([string]::IsNullOrWhiteSpace($Model)) {
     $preferred = @(
+        'meta/llama-3.1-70b-instruct',
         'nvidia/llama-3.1-nemotron-ultra-253b-v1',
         'meta/llama-3.1-405b-instruct',
-        'meta/llama-3.1-70b-instruct'
+        'mistralai/mistral-nemotron'
     )
     $Model = @($preferred | Where-Object { $modelIds -contains $_ } | Select-Object -First 1)
     if ([string]::IsNullOrWhiteSpace($Model)) {
