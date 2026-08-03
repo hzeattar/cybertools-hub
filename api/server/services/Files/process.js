@@ -767,7 +767,7 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
           temp_file_id,
           user: req.user.id,
           type,
-          filepath: filepath ?? file.path,
+          filepath: filepath ?? `text://${file_id}`,
           source: FileSources.text,
           filename: file.originalname,
           model: messageAttachment ? undefined : req.body.model,

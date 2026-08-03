@@ -393,6 +393,38 @@ describe('processAgentFileUpload', () => {
   });
 
   describe('text size guard', () => {
+    test('stores parsed text uploads with a stable virtual filepath instead of the multer temp path', async () => {
+      const { parseText } = require('@librechat/api');
+      parseText.mockResolvedValueOnce({ text: 'hello from upload', bytes: 17 });
+      mergeFileConfig.mockReturnValue({
+        ...makeFileConfig(),
+        text: { supportedMimeTypes: ['text/plain'] },
+      });
+      const req = makeReq({ mimetype: 'text/plain', ocrConfig: null });
+
+      await processAgentFileUpload({
+        req,
+        res: mockRes,
+        metadata: { ...makeMetadata(), message_file: true },
+      });
+
+      expect(db.createFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: 'hello from upload',
+          filepath: 'text://file-uuid-123',
+          source: FileSources.text,
+          context: FileContext.message_attachment,
+        }),
+        true,
+      );
+      expect(db.createFile).toHaveBeenCalledWith(
+        expect.not.objectContaining({
+          filepath: '/tmp/upload.bin',
+        }),
+        true,
+      );
+    });
+
     test('throws before writing to MongoDB when extracted text exceeds 15MB', async () => {
       const oversizedText = 'x'.repeat(15 * 1024 * 1024 + 1);
       getStrategyFunctions.mockReturnValue({

@@ -50,6 +50,22 @@ export async function getFileStream(
   }
 
   const source = file.source ?? FileSources.local;
+  if (source === FileSources.text && file.text) {
+    const content = Buffer.from(file.text, 'utf8').toString('base64');
+    return {
+      file,
+      content,
+      metadata: {
+        file_id: file.file_id,
+        temp_file_id: file.temp_file_id,
+        filepath: file.filepath,
+        source: file.source,
+        filename: file.filename,
+        type: file.type,
+      },
+    };
+  }
+
   if (!encodingMethods[source]) {
     encodingMethods[source] = getStrategyFunctions(source);
   }
