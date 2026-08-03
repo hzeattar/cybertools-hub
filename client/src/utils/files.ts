@@ -354,14 +354,8 @@ const isProviderAttachType = (type: string, ctx: UploadOptionContext): boolean =
     isDocumentSupportedProvider(currentProvider) ||
     isAzureWithResponsesApi
   ) {
-    /** Custom endpoints that the admin opened up (permissive config) honor that allowlist,
-     * matching the file picker; an inherited default config is not treated as opened up. */
-    if (
-      ctx.endpointType === EModelEndpoint.custom &&
-      ctx.endpointSupportedMimeTypes != null &&
-      isPermissiveMimeConfig(ctx.endpointSupportedMimeTypes)
-    ) {
-      return checkType(type, ctx.endpointSupportedMimeTypes);
+    if (ctx.endpointType === EModelEndpoint.custom) {
+      return false;
     }
     if (currentProvider === EModelEndpoint.google || currentProvider === Providers.OPENROUTER) {
       return (

@@ -111,7 +111,7 @@ describe('getViableUploadOptions', () => {
       expect(getViableUploadOptions([file(XLSX, 'report.xlsx')], ctx)).toEqual([undefined]);
     });
 
-    it('honors a permissive custom endpoint config for direct attach', () => {
+    it('does not infer direct provider attachment support for custom endpoints', () => {
       const ctx = baseCtx({
         provider: 'MyGateway',
         endpoint: 'MyGateway',
@@ -121,7 +121,22 @@ describe('getViableUploadOptions', () => {
         contextEnabled: false,
         endpointSupportedMimeTypes: [/.*/],
       });
-      expect(getViableUploadOptions([file(XLSX, 'report.xlsx')], ctx)).toEqual([undefined]);
+      expect(getViableUploadOptions([file(XLSX, 'report.xlsx')], ctx)).toEqual([]);
+    });
+
+    it('routes CyberTools NVIDIA text uploads to context instead of direct file parts', () => {
+      const ctx = baseCtx({
+        provider: 'CyberTools NVIDIA NIM',
+        endpoint: 'CyberTools NVIDIA NIM',
+        endpointType: 'custom',
+        fileSearchEnabled: true,
+        codeEnabled: true,
+        contextEnabled: true,
+        endpointSupportedMimeTypes: [/.*/],
+      });
+      const options = getViableUploadOptions([file('text/plain', 'notes.txt')], ctx);
+      expect(options).not.toContain(undefined);
+      expect(options).toContain(EToolResources.context);
     });
 
     it('does not treat a non-permissive custom config as broad provider support', () => {
