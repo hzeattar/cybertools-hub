@@ -184,16 +184,19 @@ const AttachFileMenu = ({
         currentProvider = Providers.OPENROUTER;
       }
 
+      const isCyberToolsNVIDIA =
+        currentProvider === 'CyberTools NVIDIA NIM' || endpoint === 'CyberTools NVIDIA NIM';
+
       const isAzureWithResponsesApi =
         (currentProvider === EModelEndpoint.azureOpenAI ||
           endpointType === EModelEndpoint.azureOpenAI) &&
         useResponsesApi === true;
 
-      if (
+      if (!isCyberToolsNVIDIA && (
         isDocumentSupportedProvider(endpointType) ||
         isDocumentSupportedProvider(currentProvider) ||
         isAzureWithResponsesApi
-      ) {
+      )) {
         items.push({
           label: localize('com_ui_upload_provider'),
           onClick: () => {
@@ -211,7 +214,7 @@ const AttachFileMenu = ({
           },
           icon: <FileImageIcon className="icon-md" />,
         });
-      } else {
+      } else if (!isCyberToolsNVIDIA) {
         items.push({
           label: localize('com_ui_upload_image_input'),
           onClick: () => {

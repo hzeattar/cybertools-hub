@@ -344,6 +344,9 @@ const isProviderAttachType = (type: string, ctx: UploadOptionContext): boolean =
   if (currentProvider.toLowerCase() === Providers.OPENROUTER) {
     currentProvider = Providers.OPENROUTER;
   }
+  if (currentProvider === 'CyberTools NVIDIA NIM' || ctx.endpoint === 'CyberTools NVIDIA NIM') {
+    return false;
+  }
   const isAzureWithResponsesApi =
     (currentProvider === EModelEndpoint.azureOpenAI ||
       ctx.endpointType === EModelEndpoint.azureOpenAI) &&

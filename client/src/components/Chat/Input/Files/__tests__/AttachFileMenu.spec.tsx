@@ -160,6 +160,26 @@ describe('AttachFileMenu', () => {
       expect(screen.queryByText('Upload Image')).not.toBeInTheDocument();
     });
 
+    it('hides direct provider upload for CyberTools NVIDIA NIM', () => {
+      setupMocks({ provider: 'CyberTools NVIDIA NIM' });
+      mockUseAgentCapabilities.mockReturnValue({
+        contextEnabled: true,
+        fileSearchEnabled: true,
+        codeEnabled: false,
+      });
+      mockUseAgentToolPermissions.mockReturnValue({
+        fileSearchAllowedByAgent: true,
+        codeAllowedByAgent: false,
+        provider: 'CyberTools NVIDIA NIM',
+      });
+      renderMenu({ endpoint: 'CyberTools NVIDIA NIM', endpointType: EModelEndpoint.openAI });
+      openMenu();
+      expect(screen.queryByText('Upload to Provider')).not.toBeInTheDocument();
+      expect(screen.queryByText('Upload Image')).not.toBeInTheDocument();
+      expect(screen.getByText('Upload as Text')).toBeInTheDocument();
+      expect(screen.getByText('Upload for File Search')).toBeInTheDocument();
+    });
+
     it('shows "Upload to Provider" when endpointType is openAI', () => {
       setupMocks({ provider: EModelEndpoint.openAI });
       renderMenu({ endpointType: EModelEndpoint.openAI });
