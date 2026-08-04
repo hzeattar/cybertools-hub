@@ -332,7 +332,7 @@ modelSpecs:
 
 ocr:
   strategy: 'mistral_ocr'
-  apiKey: '${MISTRAL_API_KEY}'
+  apiKey: '${OCR_API_KEY}'
   baseURL: 'https://api.mistral.ai/v1'
 
 memory:
