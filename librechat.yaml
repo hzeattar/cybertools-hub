@@ -330,6 +330,11 @@ modelSpecs:
           # Tone
           Be direct and systematic. Reply in the user's language (Arabic or English). Use code blocks for commands and configuration snippets.
 
+ocr:
+  strategy: 'mistral_ocr'
+  apiKey: '${MISTRAL_API_KEY}'
+  baseURL: 'https://api.mistral.ai/v1'
+
 memory:
   disabled: false
   validKeys: ['preferences', 'work_info', 'personal_info', 'skills', 'interests', 'context']
